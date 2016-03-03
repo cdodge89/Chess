@@ -1,0 +1,73 @@
+/*The color scheme I am using is #14 vintage romantic formt he 50 color schemes website*/
+h1	{
+	text-align: center;
+	font-family: 'Passion One';
+	font-size: 6em;
+	color: #260126;
+}
+h3{
+	text-align: center;
+	background: #F2EEB3;
+	border-radius: 5px;
+	width: 70%;
+	margin: 0px auto;
+	color: #260126;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	font-family: 'Passion One';
+	font-size:3em;
+}
+.blackSquare{
+	width: 6.25vw;
+	max-width: 112px;
+	min-width: 63px;
+	height: 6.25vw;
+	max-height: 112px;
+	/*min-height: 63px;*/
+	background: #56303A;
+	color: #F2EEB3;
+	float: left;
+}
+.whiteSquare{
+	width: 6.25vw;
+	max-width: 112px;
+	min-width: 63px;
+	height: 6.25vw;
+	color: #56303A;
+	max-height: 112px;
+	/*min-height: 63px;*/
+	background: #F2EEB3;
+	float: left;
+	
+	/*outline: 2px solid #DEB305;*/
+}
+#gameBoard{
+	width: 100%;
+	max-width:896px;
+	max-height:896px;
+	min-width: 504px;
+	/*min-height: 504px;*/
+}
+.no-padding{
+	padding-left: 0px;
+	padding-right: 0px;
+}
+#test-btn{
+	background: #F2EEB3;
+	text-align: center;
+	color: #260126;
+	font-family: 'Passion One';
+	font-size: 3em;
+	width: 15vw;
+	margin: 10px auto;
+	border-radius: 5px;
+}
+
+#test-btn:hover{
+	background: #260126;
+	color: #F2EEB3;
+}
+
+/*body{
+	background: #260126;
+}*/

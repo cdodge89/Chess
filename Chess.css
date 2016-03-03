@@ -8,16 +8,21 @@ h1	{
 }
 h3{
 	text-align: center;
-	background: #F2EEB3;
 	border-radius: 5px;
 	width: 70%;
 	margin: 0px auto;
-	color: #260126;
 	padding-top: 5px;
 	padding-bottom: 5px;
 	font-family: 'Cinzel';
 	font-weight: bold;
 	font-size:3em;
+}
+
+li{
+	float: left;
+	list-style-type: none;
+	width: 6.25vw;
+	max-width: 112px;
 }
 .blackSquare{
 	width: 6.25vw;
@@ -57,9 +62,9 @@ h3{
 	padding-right: 0px;
 }
 #test-btn{
-	background: #F2EEB3;
+	background: #005784;
 	text-align: center;
-	color: #260126;
+	color: #E9E9E2;
 	font-family: 'Cinzel';
 	font-weight: bold;
 	font-size: 3em;
@@ -69,8 +74,23 @@ h3{
 }
 
 #test-btn:hover{
-	background: #260126;
-	color: #F2EEB3;
+	background: #3A1550;
+	color: #E9E9E2;
+}
+
+#white-prison{
+	background: #005784;
+	color: #E9E9E2;
+}
+
+#black-prison{
+	background: #3A1550;
+	color: #E9E9E2;
+}
+
+.prison{
+	background: rgba(10 ,10, 10, .2);
+	width: 70%;
 }
 
 /*body{

@@ -62,14 +62,20 @@ $(document).ready(function(){
 			for(var j = 0; j < width; j++){
 				if(i === 1){
 					gameBoardArr[i][j].piece = makePiece('black','pawn');
-					var piece =gameBoardArr[i][j].piece;
+					var piece = gameBoardArr[i][j].piece;
 					putPieceInSquare(piece,i,j);
 				} else if(i === 6){
 					gameBoardArr[i][j].piece = makePiece('white','pawn');
-					var piece =gameBoardArr[i][j].piece;
+					var piece = gameBoardArr[i][j].piece;
 					putPieceInSquare(piece,i,j);
 				} else if(i === 0){
-
+					gameBoardArr[i][j].piece = makeRoyal(gameBoardArr, 'black', j);
+					var piece = gameBoardArr[i][j].piece;
+					putPieceInSquare(piece,i,j);
+				} else if(i === 7){
+					gameBoardArr[i][j].piece = makeRoyal(gameBoardArr, 'white', j);
+					var piece = gameBoardArr[i][j].piece;
+					putPieceInSquare(piece,i,j);
 				}
 				
 			}
@@ -100,6 +106,22 @@ $(document).ready(function(){
 
 	function emptySquare(row,col){
 		$("#"+row.toString()+col.toString()).text('');
+	}
+
+	function makeRoyal(gameBoardArr, color, col){
+		var piece
+		if(col === 0 || col === 7){
+			piece = makePiece(color, 'rook');
+		} else if(col === 1 || col === 6){
+			piece = makePiece(color, 'knight');
+		} else if(col === 2 || col === 5){
+			piece = makePiece(color, 'bishop');
+		}else if(col === 3){
+			piece = makePiece(color, 'queen');
+		}else{
+			piece = makePiece(color, 'king');
+		}
+		return piece;
 	}
 
 	});

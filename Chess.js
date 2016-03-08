@@ -308,7 +308,7 @@ $(document).ready(function(){
 			if(inbounds(row,col-i) && isEmpty(row,col-i,gameBoardArr)){
 				highlightYellow(row,col-i);
 			} else if (inbounds(row,col-i) && !isEmpty(row,col-i,gameBoardArr) && !sameColor(piece,row,col-i,gameBoardArr)){
-				highlightRed(row,col+i);
+				highlightRed(row,col-i);
 				break;
 			} else{
 				break;

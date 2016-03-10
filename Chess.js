@@ -55,6 +55,24 @@ $(document).ready(function(){
 		}
 	});
 
+	$("#mute").click( function (){
+    if( $("audio").prop('muted') )
+    {	
+    	console.log("unmute");
+        $("audio").prop('muted', false);
+        $(this).removeClass('glyphicon-volume-up');
+        $(this).addClass('glyphicon-volume-off');
+    }
+
+    else {
+    	console.log("mute");
+    $("audio").prop('muted', true);
+    $(this).removeClass('glyphicon-volume-off');
+    $(this).addClass('glyphicon-volume-up');
+    }
+
+});
+
 
 //======================================FUNCTIONS=============================================
 	function capitalize(str){

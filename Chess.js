@@ -73,9 +73,23 @@ $(document).ready(function(){
 		emptySquare(row,col,gameBoardArr);
 	}
 
-	function emptySquare(row,col,gameBoardArr){
+	function clone(object) {
+        function F() {}
+        F.prototype = object;
+        return new F();
+    }
+
+	function emptySquare(row, col, gameBoardArr){
 		$("#"+row.toString()+col.toString()).text('');
 		gameBoardArr[row][col].piece = 'none';
+	}
+
+	function fillThreatenedArrays(threatenedByWhiteArr, threatenedByBlackArr, gameBoardArr){
+		for(var i = 0; i < gameBoardArr.length; i++){
+			for(var j = 0; j < gameBoardArr[i].length; j++){
+				
+			}
+		}
 	}
 
 	function highlightMoves(piece, gameBoardArr){

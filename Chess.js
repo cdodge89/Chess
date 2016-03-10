@@ -265,7 +265,7 @@ $(document).ready(function(){
 		if(inbounds(row+1,col+1) && piece.color === 'black' && !isEmpty(row+1,col+1,gameBoardArr) && !sameColor(piece,row+1,col+1,gameBoardArr)) {
 			highlightRed(row+1,col+1);
 		} 
-		if(inbounds(row+1,col-1) && piece.color === 'black' && !isEmpty(row+1,col-1,gameBoardArr) && !sameColor(piece,row+1,col+1,gameBoardArr)){
+		if(inbounds(row+1,col-1) && piece.color === 'black' && !isEmpty(row+1,col-1,gameBoardArr) && !sameColor(piece,row+1,col-1,gameBoardArr)){
 			highlightRed(row+1,col-1);
 		} 
 		if (inbounds(row-1,col) && piece.color === 'white' && isEmpty(row-1,col,gameBoardArr)){
@@ -277,7 +277,7 @@ $(document).ready(function(){
 		if(inbounds(row-1,col+1) && piece.color === 'white' && !isEmpty(row-1,col+1,gameBoardArr) && !sameColor(piece,row-1,col+1,gameBoardArr)){
 			highlightRed(row-1,col+1);
 		} 
-		if(inbounds(row-1,col-1) && piece.color === 'white' && !isEmpty(row-1,col-1,gameBoardArr) && !sameColor(piece,row-1,col+1,gameBoardArr)){
+		if(inbounds(row-1,col-1) && piece.color === 'white' && !isEmpty(row-1,col-1,gameBoardArr) && !sameColor(piece,row-1,col-1,gameBoardArr)){
 			highlightRed(row-1,col-1);
 		}
 	}

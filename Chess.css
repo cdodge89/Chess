@@ -3,7 +3,7 @@ h1	{
 	text-align: center;
 	font-family: 'Cinzel';
 	font-weight: bold;
-	font-size: 6em;
+	font-size: 4em;
 	color: #260126;
 }
 h3{
@@ -15,7 +15,7 @@ h3{
 	padding-bottom: 5px;
 	font-family: 'Cinzel';
 	font-weight: bold;
-	font-size:2em;
+	font-size:1.5em;
 }
 
 li{
@@ -26,10 +26,10 @@ li{
 	margin: 10px auto;
 }
 .blackSquare{
-	width: 6.25vw;
-	max-width: 112px;
-	min-width: 63px;
-	height: 6.25vw;
+	width: 12.5%;
+	/*max-width: 112px;*/
+	/*min-width: 63px;*/
+	height: 12.5%;
 	max-height: 112px;
 	/*min-height: 63px;*/
 	/*background: #56303A;*/
@@ -38,10 +38,10 @@ li{
 	float: left;
 }
 .whiteSquare{
-	width: 6.25vw;
-	max-width: 112px;
-	min-width: 63px;
-	height: 6.25vw;
+	width: 12.5%;
+	/*max-width: 112px;*/
+	/*min-width: 63px;*/
+	height: 12.5%;
 	color: #56303A;
 	max-height: 112px;
 	/*min-height: 63px;*/
@@ -52,7 +52,8 @@ li{
 	/*outline: 2px solid #DEB305;*/
 }
 #gameBoard{
-	width: 100%;
+	width: 70vh;
+	height: 70vh;
 	max-width:896px;
 	max-height:896px;
 	min-width: 504px;
@@ -68,7 +69,7 @@ li{
 	color: #E9E9E2;
 	font-family: 'Cinzel';
 	font-weight: bold;
-	font-size: 3em;
+	font-size: 2em;
 	width: 15vw;
 	margin: 10px auto;
 	border-radius: 5px;
@@ -97,7 +98,7 @@ li{
 }
 
 img{
-	width: 100%;
+	height: 100%;
 }
 
 .highlight-yellow{
@@ -106,6 +107,7 @@ img{
 .highlight-red{
 	box-shadow: inset 0 0 0 1000px rgba(181,17,4,.7);
 }
+
 
 /*body{
 	background: #260126;

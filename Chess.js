@@ -1,7 +1,7 @@
 $(document).ready(function(){
 	var global = {
 		whiteMoveFlag: true,
-		selectedPiece: 'none',
+		selectedPiece: null,
 		gameBoardArr: [],
 		threatenedByWhiteArr: [],
 		threatenedByBlackArr: [],
@@ -28,6 +28,43 @@ $(document).ready(function(){
 	global.gameBoardArr = initializePieces(global.gameBoardArr, 8, 8);
 	console.log(global.gameBoardArr);
 
+	Piece.prototype.move = function (newRow, newCol, gameBoardArr){
+		pos = this.position;
+		row = +pos[0];
+		col = +pos[1];
+		putPieceInSquare(this,newRow,newCol,gameBoardArr);
+		emptySquare(row,col,gameBoardArr);
+		this.initialPosition = false;
+	}
+	Piece.prototype.initialPosition = true;
+//ask about queen inheriting twice
+	//================CONSTRUCTOR======================================
+	function Piece (id, color, type, image, position){
+		this.id = id;
+		this.color = color;
+		this.type = type;
+		this.image = image;
+		this.position = position;
+	}
+
+	var Pawn = Object.create(Piece);
+	console.log(whitePawn);
+
+	blackPawn = clone(whitePawn);
+	blackPawn.color = 'black';
+	console.log(blackPawn);
+
+	Object.prototype.create = function(object){
+		constructor.prototype = object;
+	    return new constructor(args);
+	}
+
+	var blackPawn1 = Object.create(Pawn, ['white'], pawnConstructor);
+
+	function pawnConstructor(args){
+		this.color = args[0];
+	}
+
 //===================================CLICK LISTENERS=========================================
 	$(".square").on('click', function(){
 		var position = this.id;
@@ -35,10 +72,10 @@ $(document).ready(function(){
 		var col = position[1];
 		var piece = global.gameBoardArr[row][col].piece;
 		console.log(piece);
-		if(piece === 'none' && (!$(this).hasClass("highlight-yellow") && !$(this).hasClass("highlight-red"))){
+		if(piece === null && (!$(this).hasClass("highlight-yellow") && !$(this).hasClass("highlight-red"))){
 			unhighlight();
-			global.selectedPiece = 'none';
-		} else if (piece !== 'none' && !$(this).hasClass("highlight-red")) {
+			global.selectedPiece = null;
+		} else if (piece !== null && !$(this).hasClass("highlight-red")) {
 			unhighlight();
 			highlightYellow(row,col);
 			highlightMoves(piece, global.gameBoardArr);
@@ -47,34 +84,41 @@ $(document).ready(function(){
 			unhighlight();
 			capturePiece(piece, global.gameBoardArr);
 			movePiece(row, col, global.selectedPiece, global.gameBoardArr);
-			global.selectedPiece = 'none';
+			global.selectedPiece = null;
 		} else if ($(this).hasClass("highlight-yellow")){
 			unhighlight();
 			movePiece(row, col, global.selectedPiece, global.gameBoardArr);
-			global.selectedPiece = 'none';
+			global.selectedPiece = null;
 		}
 	});
 
 	$("#mute").click( function (){
-    if( $("audio").prop('muted') )
-    {	
-    	console.log("unmute");
-        $("audio").prop('muted', false);
-        $(this).removeClass('glyphicon-volume-up');
-        $(this).addClass('glyphicon-volume-off');
-    }
+	    if( $("audio").prop('muted') )
+	    {	
+	    	console.log("unmute");
+	        $("audio").prop('muted', false);
+	        $(this).removeClass('glyphicon-volume-up');
+	        $(this).addClass('glyphicon-volume-off');
+	    }
 
-    else {
-    	console.log("mute");
-    $("audio").prop('muted', true);
-    $(this).removeClass('glyphicon-volume-off');
-    $(this).addClass('glyphicon-volume-up');
+	    else {
+	    	console.log("mute");
+	    $("audio").prop('muted', true);
+	    $(this).removeClass('glyphicon-volume-off');
+	    $(this).addClass('glyphicon-volume-up');
     }
 
 });
 
 
+
 //======================================FUNCTIONS=============================================
+	function highlightVertical(dist, gameBoard){
+		for (var i = 0; i < dist; i++){
+
+		}
+	}
+
 	function capitalize(str){
 		str = str.substring(0,1).toUpperCase() + str.substring(1);
 		return str;
@@ -91,15 +135,9 @@ $(document).ready(function(){
 		emptySquare(row,col,gameBoardArr);
 	}
 
-	function clone(object) {
-        function F() {}
-        F.prototype = object;
-        return new F();
-    }
-
 	function emptySquare(row, col, gameBoardArr){
 		$("#"+row.toString()+col.toString()).text('');
-		gameBoardArr[row][col].piece = 'none';
+		gameBoardArr[row][col].piece = null;
 	}
 
 	function fillThreatenedArrays(threatenedByWhiteArr, threatenedByBlackArr, gameBoardArr){
@@ -484,7 +522,7 @@ $(document).ready(function(){
 	}
 
 	function isEmpty(row, col, gameBoardArr){
-		if (gameBoardArr[row][col].piece === 'none'){
+		if (gameBoardArr[row][col].piece === null){
 			return true;
 		} else {
 			return false;
@@ -503,11 +541,11 @@ $(document).ready(function(){
 				for(var j = 0; j < width; j++){
 					if(flag){
 						$("#gameBoard").append('<div class="square blackSquare"></div>');
-						row.push({'position': i.toString()+j.toString(), 'piece': 'none'});
+						row.push({'position': i.toString()+j.toString(), 'piece': null});
 						flag = false;
 					} else{
 						$("#gameBoard").append('<div class="square whiteSquare"></div>');
-						row.push({'position': i.toString()+j.toString(), 'piece': 'none'});
+						row.push({'position': i.toString()+j.toString(), 'piece': null});
 						flag = true;
 					}
 
@@ -544,15 +582,6 @@ $(document).ready(function(){
 			piece = makePiece(color, 'king');
 		}
 		return piece;
-	}
-
-	function movePiece(newRow, newCol, piece, gameBoardArr){
-		pos = piece.position;
-		row = +pos[0];
-		col = +pos[1];
-		putPieceInSquare(piece,newRow,newCol,gameBoardArr);
-		emptySquare(row,col,gameBoardArr);
-		piece.initialPos = false;
 	}
 
 	function putPieceInSquare(piece,row,col,gameBoardArr){

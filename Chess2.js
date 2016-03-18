@@ -37,9 +37,19 @@ $(document).ready(function(){
 		pos = this.position;
 		row = +pos[0];
 		col = +pos[1];
-		// putPieceInSquare(this,newRow,newCol,gameBoardArr);
-		// emptySquare(row,col,gameBoardArr);
+		putPieceInSquare(this);
 		this.initialPosition = false;
+		emptySquare(row,col,gameBoardArr);
+		function putPieceInSquare(piece){
+			$("#"+newRow.toString()+newCol.toString()).append(piece.image);
+			piece.position = newRow.toString()+newCol.toString();
+			gameBoardArr[newRow][newCol] = piece;
+		}
+
+		function emptySquare(){
+			$("#"+row.toString()+col.toString()).text('');
+			gameBoardArr[row][col] = undefined;
+		}
 	}
 	Piece.prototype.initialPosition = true;
 
@@ -62,6 +72,48 @@ $(document).ready(function(){
 	Queen.prototype = Object.create(Piece.prototype);
 	King.prototype = Object.create(Piece.prototype);
     // console.log(Pawn, Rook, Knight, Bishop, Queen, King);
+
+	
+
+	makeGameBoard(global.gameBoardArr, 8, 8);
+
+	
+
+	placePieces(global.gameBoardArr);
+
+	
+
+	makeBoardTargets(global.gameBoardArr);
+
+	$(".square").on('click', function(){
+		var position = this.id;
+		var row = +position[0];
+		var col = +position[1];
+		if(global.gameBoardArr[row][col] && !$(this).hasClass('highlight-yellow')){
+			unhighlight();
+			global.selectedPiece = global.gameBoardArr[row][col];
+			highlightTargets(global.gameBoardArr[row][col].targetsArr);
+		} else if($(this).hasClass('highlight-yellow')){
+			unhighlight();
+			global.selectedPiece.move(row,col,global.gameBoardArr);
+		}
+		
+		makeBoardTargets(global.gameBoardArr)
+	});
+
+	console.log(global.gameBoardArr);
+	// highlightTargets(global.threatenedByWhiteArr);
+	// highlightTargets(global.threatenedByBlackArr);
+	// console.log(global.threatenedByBlackArr);
+	// console.log(global.threatenedByWhiteArr);
+
+
+//=================================FUNCTIONS==============================
+	function putPieceInSquare(piece,row,col,gameBoardArr){
+		$("#"+row.toString()+col.toString()).append(piece.image);
+		piece.position = row.toString()+col.toString();
+		gameBoardArr[row][col].piece = piece;
+	}
 
 	function makeGameBoard(gameBoardArr, height, width){
 		var flag;
@@ -89,8 +141,6 @@ $(document).ready(function(){
 			}
 			return gameBoardArr;
 	}
-
-	makeGameBoard(global.gameBoardArr, 8, 8);
 
 	function placeImage(img, row, col){
 		$("#"+row.toString()+col.toString()).append(img);
@@ -145,31 +195,257 @@ $(document).ready(function(){
 		}
 	}
 
-	placePieces(global.gameBoardArr);
-
-	function makeMoves(obj){
-		obj.targetsArr = [1,2,3];
+	function inbounds(row, col){
+		if (row <= 7 && row >= 0 && col <= 7 && col >= 0){
+			return true;
+		} else {
+			return false;
+		}
 	}
 
-	function makeBoardMoves(gameBoardArr){
-		for(var i = 0; i < gameBoardArr.length; i++){
-			for(var j = 0; j < gameBoardArr[i].length; j++){
-				if(gameBoardArr[i][j]){
-					makeMoves(gameBoardArr[i][j]);
+	function sameColor(gameBoardArr, row, col, color){
+		if(gameBoardArr[row][col].color === color){
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	function threatenedArrays(id, color){
+		if (color === 'black'){
+			global.threatenedByBlackArr.push(id);
+		} else if (color === 'white'){
+			global.threatenedByWhiteArr.push(id);
+		}
+	}
+
+	function verticalTargets(gameBoardArr, row, col, dist){
+		obj = gameBoardArr[row][col];
+		for (var i = 1; i < dist; i++){
+			if (inbounds(row+i, col) && !gameBoardArr[row+i][col]){
+				obj.targetsArr.push((row+i).toString()+col.toString());
+				threatenedArrays((row+i).toString()+col.toString(), obj.color);
+			} else if(inbounds(row+i, col) && gameBoardArr[row+i][col]){
+				threatenedArrays((row+i).toString()+col.toString(), obj.color);
+				if(!sameColor(gameBoardArr,row+i,col,obj.color)){
+					obj.targetsArr.push((row+i).toString()+col.toString());
+				}
+				break;
+			}
+		}
+		for (var i = 1; i < dist; i++){
+			if (inbounds(row-i, col) && !gameBoardArr[row-i][col]){
+				obj.targetsArr.push((row-i).toString()+col.toString());
+				threatenedArrays((row-i).toString()+col.toString(), obj.color);
+			} else if(inbounds(row-i, col) && gameBoardArr[row-i][col]){
+				threatenedArrays((row-i).toString()+col.toString(), obj.color);
+				if(!sameColor(gameBoardArr,row-i,col,obj.color)){
+					obj.targetsArr.push((row-i).toString()+col.toString());
+				}
+				break;
+			}
+		}
+	}
+
+	function horizontalTargets(gameBoardArr, row, col, dist){
+		obj = gameBoardArr[row][col];
+		for (var i = 1; i < dist; i++){
+			if (inbounds(row, col+i) && !gameBoardArr[row][col+i]){
+				obj.targetsArr.push(row.toString()+(col+i).toString());
+				threatenedArrays(row.toString()+(col+i).toString(), obj.color);
+			} else if(inbounds(row, col+i) && gameBoardArr[row][col+i]){
+				threatenedArrays(row.toString()+(col+i).toString(), obj.color);
+				if(!sameColor(gameBoardArr,row,col+i,obj.color)){
+					obj.targetsArr.push(row.toString()+(col+i).toString());
+				}
+				break;
+			}
+		}
+		for (var i = 1; i < dist; i++){
+			if (inbounds(row, col-i) && !gameBoardArr[row][col-i]){
+				obj.targetsArr.push(row.toString()+(col-i).toString());
+				threatenedArrays(row.toString()+(col-i).toString(), obj.color);
+			} else if(inbounds(row, col-i) && gameBoardArr[row][col-i]){
+				threatenedArrays(row.toString()+(col-i).toString(), obj.color);
+				if(!sameColor(gameBoardArr,row,col-i,obj.color)){
+					obj.targetsArr.push(row.toString()+(col-i).toString());
+				}
+				break;
+			}
+		}
+	}
+
+	function diagonalUpTargets(gameBoardArr, row, col, dist){
+		obj = gameBoardArr[row][col];
+		for(var i = 1; i < dist; i++){
+			if (inbounds(row-i, col-i) && !gameBoardArr[row-i][col-i]){
+				obj.targetsArr.push((row-i).toString()+(col-i).toString());
+				threatenedArrays((row-i).toString()+(col-i).toString(),obj.color);
+			} else if(inbounds(row-i, col-i) && gameBoardArr[row-i][col-i]){
+				threatenedArrays((row-i).toString()+(col-i).toString(),obj.color);
+				if(!sameColor(gameBoardArr,row-i,col-i,obj.color)){
+					obj.targetsArr.push((row-i).toString()+(col-i).toString());
+				}
+				break;
+			}
+		}
+		for(var i = 1; i < dist; i++){
+			if (inbounds(row-i, col+i) && !gameBoardArr[row-i][col+i]){
+				obj.targetsArr.push((row-i).toString()+(col+i).toString());
+				threatenedArrays((row-i).toString()+(col+i).toString(),obj.color);
+			} else if(inbounds(row-i, col+i) && gameBoardArr[row-i][col+i]){
+				threatenedArrays((row-i).toString()+(col+i).toString(),obj.color);
+				if(!sameColor(gameBoardArr,row-i,col+i,obj.color)){
+					obj.targetsArr.push((row-i).toString()+(col+i).toString());
+				}
+				break;
+			}
+		}
+	}
+
+	function diagonalDownTargets(gameBoardArr, row, col, dist){
+		obj = gameBoardArr[row][col];
+		for(var i = 1; i < dist; i++){
+			if (inbounds(row+i, col-i) && !gameBoardArr[row+i][col-i]){
+				obj.targetsArr.push((row+i).toString()+(col-i).toString());
+				threatenedArrays((row+i).toString()+(col-i).toString(),obj.color);
+			} else if(inbounds(row+i, col-i) && gameBoardArr[row+i][col-i]){
+				threatenedArrays((row+i).toString()+(col-i).toString(),obj.color);
+				if(!sameColor(gameBoardArr,row+i,col-i,obj.color)){
+					obj.targetsArr.push((row+i).toString()+(col-i).toString());
+				}
+				break;
+			}
+		}
+		for(var i = 1; i < dist; i++){
+			if (inbounds(row+i, col+i) && !gameBoardArr[row+i][col+i]){
+				obj.targetsArr.push((row+i).toString()+(col+i).toString());
+				threatenedArrays((row+i).toString()+(col+i).toString(),obj.color);
+			} else if(inbounds(row+i, col+i) && gameBoardArr[row+i][col+i]){
+				threatenedArrays((row+i).toString()+(col+i).toString(),obj.color);
+				if(!sameColor(gameBoardArr,row+i,col+i,obj.color)){
+					obj.targetsArr.push((row+i).toString()+(col+i).toString());
+				}
+				break;
+			}
+		}
+	}
+
+	function pawnAttackTargets(gameBoardArr, row, col){
+		obj = gameBoardArr[row][col];
+		if(obj.color === 'black'){
+			threatenedArrays((row+1).toString()+(col-1).toString(), 'black');
+			threatenedArrays((row+1).toString()+(col+1).toString(), 'black');
+			if(inbounds(row+1,col+1) && gameBoardArr[row+1][col+1] && !sameColor(gameBoardArr,row+1,col+1,obj.color)){
+				obj.targetsArr.push((row+1).toString()+(col+1).toString());
+			}
+			if(inbounds(row+1,col-1) && gameBoardArr[row+1][col-1] && !sameColor(gameBoardArr,row+1,col-1,obj.color)){
+				obj.targetsArr.push((row+1).toString()+(col-1).toString());
+			}
+		} else if(obj.color === 'white'){
+			threatenedArrays((row-1).toString()+(col-1).toString(), 'white');
+			threatenedArrays((row-1).toString()+(col+1).toString(), 'white');
+			if(inbounds(row-1,col+1) && gameBoardArr[row-1][col+1] && !sameColor(gameBoardArr,row-1,col+1,obj.color)){
+				obj.targetsArr.push((row-1).toString()+(col+1).toString());
+			}
+			if(inbounds(row-1,col-1) && gameBoardArr[row-1][col-1] && !sameColor(gameBoardArr,row-1,col-1,obj.color)){
+				obj.targetsArr.push((row-1).toString()+(col-1).toString());
+			}
+		}
+	}
+
+	function pawnMoveTargets(gameBoardArr, row, col){
+		obj = gameBoardArr[row][col];
+		if(obj.color === 'black'){
+			if(inbounds(row+1,col) && !gameBoardArr[row+1][col]){
+				obj.targetsArr.push((row+1).toString()+col.toString());
+			}
+			if (obj.initialPosition){
+				if(!gameBoardArr[row+2][col]){
+					obj.targetsArr.push((row+2).toString()+col.toString());
+				}
+			}
+		} else if(obj.color === 'white'){
+			if(inbounds(row-1,col) && !gameBoardArr[row-1][col]){
+				obj.targetsArr.push((row-1).toString()+col.toString());
+			}
+			if (obj.initialPosition){
+				if(!gameBoardArr[row-2][col]){
+					obj.targetsArr.push((row-2).toString()+col.toString());
 				}
 			}
 		}
 	}
 
-	makeBoardMoves(global.gameBoardArr);
+	function knightTargets(gameBoardArr, row, col){
+		obj = gameBoardArr[row][col];
+		var knightArr = [[-2,-1],[-2,1],[-1,2],[1,2],[2,1],[2,-1],[-1,-2],[1,-2]];
+		for(var i = 0; i < knightArr.length; i++){
+			if(inbounds(row+knightArr[i][0],col+knightArr[i][1])){
+				threatenedArrays((row+knightArr[i][0]).toString()+(col+knightArr[i][1]).toString(),obj.color);
+				if(inbounds(row+knightArr[i][0],col+knightArr[i][1]) && !gameBoardArr[row+knightArr[i][0]][col+knightArr[i][1]]){
+					obj.targetsArr.push((row+knightArr[i][0]).toString()+(col+knightArr[i][1]).toString());
+				} else if(inbounds(row+knightArr[i][0],col+knightArr[i][1]) && gameBoardArr[row+knightArr[i][0]][col+knightArr[i][1]] && !sameColor(gameBoardArr,row+knightArr[i][0],col+knightArr[i][1],obj.color)){
+					obj.targetsArr.push((row+knightArr[i][0]).toString()+(col+knightArr[i][1]).toString());
+				}
+			}
+		}
 
-	$(".square").on('click', function(){
-		var position = this.id;
-		var row = +position[0];
-		var col = +position[1];
-		
-	});
+	}
 
-	console.log(global.gameBoardArr);
+	function makeTargets(gameBoardArr, row, col){
+		obj = gameBoardArr[row][col];
+		obj.targetsArr = [];
+		if(obj.type === 'pawn'){
+			pawnMoveTargets(gameBoardArr, row, col);
+			pawnAttackTargets(gameBoardArr, row, col);
+		} else if(obj.type === 'rook'){
+			horizontalTargets(gameBoardArr, row, col, 8);
+			verticalTargets(gameBoardArr, row, col, 8);
+		} else if(obj.type === 'knight'){
+			knightTargets(gameBoardArr, row, col);
+		} else if(obj.type === 'bishop'){
+			diagonalDownTargets(gameBoardArr, row, col, 8);
+			diagonalUpTargets(gameBoardArr, row, col, 8);
+		} else if(obj.type === 'queen'){
+			horizontalTargets(gameBoardArr, row, col, 8);
+			verticalTargets(gameBoardArr, row, col, 8);
+			diagonalDownTargets(gameBoardArr, row, col, 8);
+			diagonalUpTargets(gameBoardArr, row, col, 8);
+		} else if(obj.type === 'king'){
+			horizontalTargets(gameBoardArr, row, col, 2);
+			verticalTargets(gameBoardArr, row, col, 2);
+			diagonalDownTargets(gameBoardArr, row, col, 2);
+			diagonalUpTargets(gameBoardArr, row, col, 2);
+		}
+	}
+
+	function makeBoardTargets(gameBoardArr){
+		global.threatenedByWhiteArr = [];
+		global.threatenedByBlackArr = [];
+		for(var i = 0; i < gameBoardArr.length; i++){
+			for(var j = 0; j < gameBoardArr[i].length; j++){
+				if(gameBoardArr[i][j]){
+					makeTargets(gameBoardArr,i,j);
+				}
+			}
+		}
+	}
+
+	function unhighlight(){
+		$('.square').removeClass('highlight-yellow');
+		$('.square').removeClass('highlight-red');
+	}
+
+	function highlightYellow(id){
+		$('#'+id).addClass('highlight-yellow');
+	}
+
+	function highlightTargets(arr){
+		for (var i = 0; i < arr.length; i++){
+			highlightYellow(arr[i]);
+		}
+	}
+
 
 });

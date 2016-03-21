@@ -69,8 +69,8 @@ $(document).ready(function(){
 
 	Pawn.prototype.getTargets = pawnTargetsWrapper(global.gameBoardArr);
 	Rook.prototype.getTargets = straightTargetsWrapper(global.gameBoardArr, 8);
-	Knight.prototype.getTargets = diagonalTargetsWrapper(global.gameBoardArr, 8);
-	Bishop.prototype.getTargets = diagonalTargetsWrapper(global.gameBoardArr, 8);
+	Knight.prototype.getTargets = knightTargetsWrapper(global.gameBoardArr, 8);
+	Bishop.prototype.getTargets = diagonalTargetsWrapper(global.gameBoardArr);
 	Queen.prototype.getTargets = queenTargetsWrapper(global.gameBoardArr, 8);
 	King.prototype.getTargets = queenTargetsWrapper(global.gameBoardArr, 2);
 
@@ -339,7 +339,7 @@ $(document).ready(function(){
 
 	function pawnTargetsWrapper(gameBoardArr){
 		return function(row, col){
-			obj = gameBoardArr[row][col];
+			obj = this;
 			if(obj.color === 'black'){
 				threatenedArrays((row+1).toString()+(col-1).toString(), 'black');
 				threatenedArrays((row+1).toString()+(col+1).toString(), 'black');
@@ -381,62 +381,18 @@ $(document).ready(function(){
 		}
 	}
 
-	// function pawnAttackTargets(gameBoardArr, row, col){
-	// 	obj = gameBoardArr[row][col];
-	// 	if(obj.color === 'black'){
-	// 		threatenedArrays((row+1).toString()+(col-1).toString(), 'black');
-	// 		threatenedArrays((row+1).toString()+(col+1).toString(), 'black');
-	// 		if(inbounds(row+1,col+1) && gameBoardArr[row+1][col+1] && !sameColor(gameBoardArr,row+1,col+1,obj.color)){
-	// 			obj.targetsArr.push((row+1).toString()+(col+1).toString());
-	// 		}
-	// 		if(inbounds(row+1,col-1) && gameBoardArr[row+1][col-1] && !sameColor(gameBoardArr,row+1,col-1,obj.color)){
-	// 			obj.targetsArr.push((row+1).toString()+(col-1).toString());
-	// 		}
-	// 	} else if(obj.color === 'white'){
-	// 		threatenedArrays((row-1).toString()+(col-1).toString(), 'white');
-	// 		threatenedArrays((row-1).toString()+(col+1).toString(), 'white');
-	// 		if(inbounds(row-1,col+1) && gameBoardArr[row-1][col+1] && !sameColor(gameBoardArr,row-1,col+1,obj.color)){
-	// 			obj.targetsArr.push((row-1).toString()+(col+1).toString());
-	// 		}
-	// 		if(inbounds(row-1,col-1) && gameBoardArr[row-1][col-1] && !sameColor(gameBoardArr,row-1,col-1,obj.color)){
-	// 			obj.targetsArr.push((row-1).toString()+(col-1).toString());
-	// 		}
-	// 	}
-	// }
-
-	// function pawnMoveTargets(gameBoardArr, row, col){
-	// 	obj = gameBoardArr[row][col];
-	// 	if(obj.color === 'black'){
-	// 		if(inbounds(row+1,col) && !gameBoardArr[row+1][col]){
-	// 			obj.targetsArr.push((row+1).toString()+col.toString());
-	// 		}
-	// 		if (obj.initialPosition){
-	// 			if(!gameBoardArr[row+2][col]){
-	// 				obj.targetsArr.push((row+2).toString()+col.toString());
-	// 			}
-	// 		}
-	// 	} else if(obj.color === 'white'){
-	// 		if(inbounds(row-1,col) && !gameBoardArr[row-1][col]){
-	// 			obj.targetsArr.push((row-1).toString()+col.toString());
-	// 		}
-	// 		if (obj.initialPosition){
-	// 			if(!gameBoardArr[row-2][col]){
-	// 				obj.targetsArr.push((row-2).toString()+col.toString());
-	// 			}
-	// 		}
-	// 	}
-	// }
-
-	function knightTargets(gameBoardArr, row, col){
-		obj = gameBoardArr[row][col];
-		var knightArr = [[-2,-1],[-2,1],[-1,2],[1,2],[2,1],[2,-1],[-1,-2],[1,-2]];
-		for(var i = 0; i < knightArr.length; i++){
-			if(inbounds(row+knightArr[i][0],col+knightArr[i][1])){
-				threatenedArrays((row+knightArr[i][0]).toString()+(col+knightArr[i][1]).toString(),obj.color);
-				if(inbounds(row+knightArr[i][0],col+knightArr[i][1]) && !gameBoardArr[row+knightArr[i][0]][col+knightArr[i][1]]){
-					obj.targetsArr.push((row+knightArr[i][0]).toString()+(col+knightArr[i][1]).toString());
-				} else if(inbounds(row+knightArr[i][0],col+knightArr[i][1]) && gameBoardArr[row+knightArr[i][0]][col+knightArr[i][1]] && !sameColor(gameBoardArr,row+knightArr[i][0],col+knightArr[i][1],obj.color)){
-					obj.targetsArr.push((row+knightArr[i][0]).toString()+(col+knightArr[i][1]).toString());
+	function knightTargetsWrapper(gameBoardArr){
+		return function(row, col){
+			obj = this;
+			var knightArr = [[-2,-1],[-2,1],[-1,2],[1,2],[2,1],[2,-1],[-1,-2],[1,-2]];
+			for(var i = 0; i < knightArr.length; i++){
+				if(inbounds(row+knightArr[i][0],col+knightArr[i][1])){
+					threatenedArrays((row+knightArr[i][0]).toString()+(col+knightArr[i][1]).toString(),obj.color);
+					if(inbounds(row+knightArr[i][0],col+knightArr[i][1]) && !gameBoardArr[row+knightArr[i][0]][col+knightArr[i][1]]){
+						obj.targetsArr.push((row+knightArr[i][0]).toString()+(col+knightArr[i][1]).toString());
+					} else if(inbounds(row+knightArr[i][0],col+knightArr[i][1]) && gameBoardArr[row+knightArr[i][0]][col+knightArr[i][1]] && !sameColor(gameBoardArr,row+knightArr[i][0],col+knightArr[i][1],obj.color)){
+						obj.targetsArr.push((row+knightArr[i][0]).toString()+(col+knightArr[i][1]).toString());
+					}
 				}
 			}
 		}

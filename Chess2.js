@@ -9,21 +9,6 @@ $(document).ready(function(){
 		redoArr: [],
 	}
 
-	var imagePaths = {
-		whitePawn:'<img src="./Assets/whitePawn.png">',
-		whiteRook:'<img src="./Assets/whiteRook.png">',
-		whiteBishop:'<img src="./Assets/whiteBishop.png">',
-		whiteKnight:'<img src="./Assets/whiteKnight.png">',
-		whiteQueen:'<img src="./Assets/whiteQueen.png">',
-		wKing:'<img src="./Assets/whiteKing.png">',
-		blackPawn:'<img src="./Assets/blackPawn.png">',
-		blackRook:'<img src="./Assets/blackRook.png">',
-		blackBishop:'<img src="./Assets/blackBishop.png">',
-		blackKnight:'<img src="./Assets/blackKnight.png">',
-		blackQueen:'<img src="./Assets/blackQueen.png">',
-		blackKing:'<img src="./Assets/blackKing.png">',
-	}
-
 	function Piece (id, color, type, image, position){
 		this.id = id;
 		this.color = color;
@@ -31,27 +16,50 @@ $(document).ready(function(){
 		this.image = image;
 		this.position = position;
 		this.targetsArr = [];
+		this.initialPosition = true;
+		this.move = function (newRow, newCol, gameBoardArr){
+			pos = this.position;
+			row = +pos[0];
+			col = +pos[1];
+			putPieceInSquare(this);
+			this.initialPosition = false;
+			emptySquare(row,col,gameBoardArr);
+			function putPieceInSquare(piece){
+				$("#"+newRow.toString()+newCol.toString()).append(piece.image);
+				piece.position = newRow.toString()+newCol.toString();
+				gameBoardArr[newRow][newCol] = piece;
+			}
+
+			function emptySquare(){
+				$("#"+row.toString()+col.toString()).text('');
+				gameBoardArr[row][col] = undefined;
+			}
+		}
 	}
 
-	Piece.prototype.move = function (newRow, newCol, gameBoardArr){
-		pos = this.position;
-		row = +pos[0];
-		col = +pos[1];
-		putPieceInSquare(this);
-		this.initialPosition = false;
-		emptySquare(row,col,gameBoardArr);
-		function putPieceInSquare(piece){
-			$("#"+newRow.toString()+newCol.toString()).append(piece.image);
-			piece.position = newRow.toString()+newCol.toString();
-			gameBoardArr[newRow][newCol] = piece;
-		}
-
-		function emptySquare(){
-			$("#"+row.toString()+col.toString()).text('');
-			gameBoardArr[row][col] = undefined;
-		}
+	function Pawn (id, color, type, image, position){
+		Piece.call(this, id, color, type, image, position);
 	}
-	Piece.prototype.initialPosition = true;
+
+	function Rook (id, color, type, image, position){
+		Piece.call(this, id, color, type, image, position);
+	}
+
+	function Knight (id, color, type, image, position){
+		Piece.call(this, id, color, type, image, position);
+	}
+
+	function Bishop (id, color, type, image, position){
+		Piece.call(this, id, color, type, image, position);
+	}
+
+	function Queen (id, color, type, image, position){
+		Piece.call(this, id, color, type, image, position);
+	}
+
+	function King (id, color, type, image, position){
+		Piece.call(this, id, color, type, image, position);
+	}
 
 	Object.create = function (object) {
         function Prot() {}
@@ -59,29 +67,16 @@ $(document).ready(function(){
         return new Prot();
     } 
 
-    var Pawn = {};
-	var Rook = {};
-	var Knight = {};
-	var Bishop = {};
-	var Queen = {};
-	var King = {};
-	Pawn.prototype = Object.create(Piece.prototype);
-	Rook.prototype = Object.create(Piece.prototype);
-	Knight.prototype = Object.create(Piece.prototype);
-	Bishop.prototype = Object.create(Piece.prototype);
-	Queen.prototype = Object.create(Piece.prototype);
-	King.prototype = Object.create(Piece.prototype);
-    // console.log(Pawn, Rook, Knight, Bishop, Queen, King);
-
-	
+	Pawn.prototype.getTargets = pawnTargetsWrapper(global.gameBoardArr);
+	Rook.prototype.getTargets = straightTargetsWrapper(global.gameBoardArr, 8);
+	Knight.prototype.getTargets = diagonalTargetsWrapper(global.gameBoardArr, 8);
+	Bishop.prototype.getTargets = diagonalTargetsWrapper(global.gameBoardArr, 8);
+	Queen.prototype.getTargets = queenTargetsWrapper(global.gameBoardArr, 8);
+	King.prototype.getTargets = queenTargetsWrapper(global.gameBoardArr, 2);
 
 	makeGameBoard(global.gameBoardArr, 8, 8);
 
-	
-
 	placePieces(global.gameBoardArr);
-
-	
 
 	makeBoardTargets(global.gameBoardArr);
 
@@ -95,6 +90,9 @@ $(document).ready(function(){
 			highlightTargets(global.gameBoardArr[row][col].targetsArr);
 		} else if($(this).hasClass('highlight-yellow')){
 			unhighlight();
+			if(global.gameBoardArr[row][col]){
+				capturePiece(global.gameBoardArr[row][col], global.gameBoardArr);
+			}
 			global.selectedPiece.move(row,col,global.gameBoardArr);
 		}
 		
@@ -109,6 +107,23 @@ $(document).ready(function(){
 
 
 //=================================FUNCTIONS==============================
+	function capitalize(str){
+		str = str.substring(0,1).toUpperCase() + str.substring(1);
+		return str;
+	}
+
+	function capturePiece(piece, gameBoardArr){
+		row = piece.position[0];
+		col = piece.position[1];
+		if (piece.color === 'black'){
+			$("#black-prison").append('<li>' + piece.image + '</li>');
+		} else {
+			$("#white-prison").append('<li>' + piece.image + '</li>');
+		}
+		$("#"+row.toString()+col.toString()).text('');
+		gameBoardArr[row][col] = undefined;
+	}
+
 	function putPieceInSquare(piece,row,col,gameBoardArr){
 		$("#"+row.toString()+col.toString()).append(piece.image);
 		piece.position = row.toString()+col.toString();
@@ -146,37 +161,32 @@ $(document).ready(function(){
 		$("#"+row.toString()+col.toString()).append(img);
 	}
 
-	function capitalize(str){
-		str = str.substring(0,1).toUpperCase() + str.substring(1);
-		return str;
-	}
-
 	function placeRoyal(gameBoardArr, row, col, color){
 		if (col === 0 || col === 7){
-			gameBoardArr[row][col] = new Rook.prototype.constructor(capitalize(color)+'Rook'+col, color, 'rook', '<img src="./Assets/'+color+'Rook.png">',row.toString()+col.toString());
-			placeImage('<img src="./Assets/'+color+'Rook.png">', row, col);
+			gameBoardArr[row][col] = new Rook(capitalize(color)+'Rook'+col, color, 'rook', '<img src="./Assets/'+color+'Rook.png">',row.toString()+col.toString());
+			placeImage(gameBoardArr[row][col].image, row, col);
 		} else if (col === 1 || col === 6){
-			gameBoardArr[row][col] = new Knight.prototype.constructor(capitalize(color)+'Knight'+col, color, 'knight', '<img src="./Assets/'+color+'Knight.png">',row.toString()+col.toString());
-			placeImage('<img src="./Assets/'+color+'Knight.png">', row, col);
+			gameBoardArr[row][col] = new Knight(capitalize(color)+'Knight'+col, color, 'knight', '<img src="./Assets/'+color+'Knight.png">',row.toString()+col.toString());
+			placeImage(gameBoardArr[row][col].image, row, col);
 		} else if (col === 2 || col === 5){
-			gameBoardArr[row][col] = new Bishop.prototype.constructor(capitalize(color)+'Bishop'+col, color, 'bishop', '<img src="./Assets/'+color+'Bishop.png">',row.toString()+col.toString());
-			placeImage('<img src="./Assets/'+color+'Bishop.png">', row, col);
+			gameBoardArr[row][col] = new Bishop(capitalize(color)+'Bishop'+col, color, 'bishop', '<img src="./Assets/'+color+'Bishop.png">',row.toString()+col.toString());
+			placeImage(gameBoardArr[row][col].image, row, col);
 		} else if (col === 3){
-			gameBoardArr[row][col] = new Queen.prototype.constructor(capitalize(color)+'Queen'+col, color, 'queen', '<img src="./Assets/'+color+'Queen.png">',row.toString()+col.toString());
-			placeImage('<img src="./Assets/'+color+'Queen.png">', row, col);
+			gameBoardArr[row][col] = new Queen(capitalize(color)+'Queen'+col, color, 'queen', '<img src="./Assets/'+color+'Queen.png">',row.toString()+col.toString());
+			placeImage(gameBoardArr[row][col].image, row, col);
 		} else if (col === 4){
-			gameBoardArr[row][col] = new King.prototype.constructor(capitalize(color)+'King'+col, color, 'king', '<img src="./Assets/'+color+'King.png">',row.toString()+col.toString());
-			placeImage('<img src="./Assets/'+color+'King.png">', row, col);
+			gameBoardArr[row][col] = new King(capitalize(color)+'King'+col, color, 'king', '<img src="./Assets/'+color+'King.png">',row.toString()+col.toString());
+			placeImage(gameBoardArr[row][col].image, row, col);
 		}
 	}
 
 	function placePiece(gameBoardArr, row, col){
 		if(row == 1){
-			gameBoardArr[row][col] = new Pawn.prototype.constructor('BlackPawn'+col, 'black', 'pawn', imagePaths.blackPawn,row.toString()+col.toString());
-			placeImage(imagePaths.blackPawn, row, col);
+			gameBoardArr[row][col] = new Pawn('BlackPawn'+col, 'black', 'pawn', '<img src="./Assets/blackPawn.png">',row.toString()+col.toString());
+			placeImage(gameBoardArr[row][col].image, row, col);
 		} else if (row == 6){
-			gameBoardArr[row][col] = new Pawn.prototype.constructor('WhitePawn'+col, 'white', 'pawn', imagePaths.whitePawn,row.toString()+col.toString());
-			placeImage(imagePaths.whitePawn, row, col);
+			gameBoardArr[row][col] = new Pawn('WhitePawn'+col, 'white', 'pawn', '<img src="./Assets/whitePawn.png">',row.toString()+col.toString());
+			placeImage(gameBoardArr[row][col].image, row, col);
 		} else if (row === 0){
 			placeRoyal(gameBoardArr, row, col, 'black');
 		} else if (row === 7){
@@ -219,163 +229,203 @@ $(document).ready(function(){
 		}
 	}
 
-	function verticalTargets(gameBoardArr, row, col, dist){
-		obj = gameBoardArr[row][col];
-		for (var i = 1; i < dist; i++){
-			if (inbounds(row+i, col) && !gameBoardArr[row+i][col]){
-				obj.targetsArr.push((row+i).toString()+col.toString());
-				threatenedArrays((row+i).toString()+col.toString(), obj.color);
-			} else if(inbounds(row+i, col) && gameBoardArr[row+i][col]){
-				threatenedArrays((row+i).toString()+col.toString(), obj.color);
-				if(!sameColor(gameBoardArr,row+i,col,obj.color)){
-					obj.targetsArr.push((row+i).toString()+col.toString());
-				}
-				break;
-			}
-		}
-		for (var i = 1; i < dist; i++){
-			if (inbounds(row-i, col) && !gameBoardArr[row-i][col]){
-				obj.targetsArr.push((row-i).toString()+col.toString());
-				threatenedArrays((row-i).toString()+col.toString(), obj.color);
-			} else if(inbounds(row-i, col) && gameBoardArr[row-i][col]){
-				threatenedArrays((row-i).toString()+col.toString(), obj.color);
-				if(!sameColor(gameBoardArr,row-i,col,obj.color)){
-					obj.targetsArr.push((row-i).toString()+col.toString());
-				}
-				break;
-			}
-		}
-	}
-
-	function horizontalTargets(gameBoardArr, row, col, dist){
-		obj = gameBoardArr[row][col];
-		for (var i = 1; i < dist; i++){
-			if (inbounds(row, col+i) && !gameBoardArr[row][col+i]){
-				obj.targetsArr.push(row.toString()+(col+i).toString());
-				threatenedArrays(row.toString()+(col+i).toString(), obj.color);
-			} else if(inbounds(row, col+i) && gameBoardArr[row][col+i]){
-				threatenedArrays(row.toString()+(col+i).toString(), obj.color);
-				if(!sameColor(gameBoardArr,row,col+i,obj.color)){
+	function straightTargetsWrapper(gameBoardArr, dist){
+		return function(row, col){
+			obj = this;
+			for (var i = 1; i < dist; i++){
+				if (inbounds(row, col+i) && !gameBoardArr[row][col+i]){
 					obj.targetsArr.push(row.toString()+(col+i).toString());
+					threatenedArrays(row.toString()+(col+i).toString(), obj.color);
+				} else if(inbounds(row, col+i) && gameBoardArr[row][col+i]){
+					threatenedArrays(row.toString()+(col+i).toString(), obj.color);
+					if(!sameColor(gameBoardArr,row,col+i,obj.color)){
+						obj.targetsArr.push(row.toString()+(col+i).toString());
+					}
+					break;
 				}
-				break;
 			}
-		}
-		for (var i = 1; i < dist; i++){
-			if (inbounds(row, col-i) && !gameBoardArr[row][col-i]){
-				obj.targetsArr.push(row.toString()+(col-i).toString());
-				threatenedArrays(row.toString()+(col-i).toString(), obj.color);
-			} else if(inbounds(row, col-i) && gameBoardArr[row][col-i]){
-				threatenedArrays(row.toString()+(col-i).toString(), obj.color);
-				if(!sameColor(gameBoardArr,row,col-i,obj.color)){
+			for (var i = 1; i < dist; i++){
+				if (inbounds(row, col-i) && !gameBoardArr[row][col-i]){
 					obj.targetsArr.push(row.toString()+(col-i).toString());
+					threatenedArrays(row.toString()+(col-i).toString(), obj.color);
+				} else if(inbounds(row, col-i) && gameBoardArr[row][col-i]){
+					threatenedArrays(row.toString()+(col-i).toString(), obj.color);
+					if(!sameColor(gameBoardArr,row,col-i,obj.color)){
+						obj.targetsArr.push(row.toString()+(col-i).toString());
+					}
+					break;
 				}
-				break;
+			}
+			for (var i = 1; i < dist; i++){
+				if (inbounds(row+i, col) && !gameBoardArr[row+i][col]){
+					obj.targetsArr.push((row+i).toString()+col.toString());
+					threatenedArrays((row+i).toString()+col.toString(), obj.color);
+				} else if(inbounds(row+i, col) && gameBoardArr[row+i][col]){
+					threatenedArrays((row+i).toString()+col.toString(), obj.color);
+					if(!sameColor(gameBoardArr,row+i,col,obj.color)){
+						obj.targetsArr.push((row+i).toString()+col.toString());
+					}
+					break;
+				}
+			}
+			for (var i = 1; i < dist; i++){
+				if (inbounds(row-i, col) && !gameBoardArr[row-i][col]){
+					obj.targetsArr.push((row-i).toString()+col.toString());
+					threatenedArrays((row-i).toString()+col.toString(), obj.color);
+				} else if(inbounds(row-i, col) && gameBoardArr[row-i][col]){
+					threatenedArrays((row-i).toString()+col.toString(), obj.color);
+					if(!sameColor(gameBoardArr,row-i,col,obj.color)){
+						obj.targetsArr.push((row-i).toString()+col.toString());
+					}
+					break;
+				}
 			}
 		}
 	}
 
-	function diagonalUpTargets(gameBoardArr, row, col, dist){
-		obj = gameBoardArr[row][col];
-		for(var i = 1; i < dist; i++){
-			if (inbounds(row-i, col-i) && !gameBoardArr[row-i][col-i]){
-				obj.targetsArr.push((row-i).toString()+(col-i).toString());
-				threatenedArrays((row-i).toString()+(col-i).toString(),obj.color);
-			} else if(inbounds(row-i, col-i) && gameBoardArr[row-i][col-i]){
-				threatenedArrays((row-i).toString()+(col-i).toString(),obj.color);
-				if(!sameColor(gameBoardArr,row-i,col-i,obj.color)){
+	function diagonalTargetsWrapper(gameBoardArr, dist){
+		return function(row, col){
+			obj = this;
+			for(var i = 1; i < dist; i++){
+				if (inbounds(row-i, col-i) && !gameBoardArr[row-i][col-i]){
 					obj.targetsArr.push((row-i).toString()+(col-i).toString());
+					threatenedArrays((row-i).toString()+(col-i).toString(),obj.color);
+				} else if(inbounds(row-i, col-i) && gameBoardArr[row-i][col-i]){
+					threatenedArrays((row-i).toString()+(col-i).toString(),obj.color);
+					if(!sameColor(gameBoardArr,row-i,col-i,obj.color)){
+						obj.targetsArr.push((row-i).toString()+(col-i).toString());
+					}
+					break;
 				}
-				break;
 			}
-		}
-		for(var i = 1; i < dist; i++){
-			if (inbounds(row-i, col+i) && !gameBoardArr[row-i][col+i]){
-				obj.targetsArr.push((row-i).toString()+(col+i).toString());
-				threatenedArrays((row-i).toString()+(col+i).toString(),obj.color);
-			} else if(inbounds(row-i, col+i) && gameBoardArr[row-i][col+i]){
-				threatenedArrays((row-i).toString()+(col+i).toString(),obj.color);
-				if(!sameColor(gameBoardArr,row-i,col+i,obj.color)){
+			for(var i = 1; i < dist; i++){
+				if (inbounds(row-i, col+i) && !gameBoardArr[row-i][col+i]){
 					obj.targetsArr.push((row-i).toString()+(col+i).toString());
+					threatenedArrays((row-i).toString()+(col+i).toString(),obj.color);
+				} else if(inbounds(row-i, col+i) && gameBoardArr[row-i][col+i]){
+					threatenedArrays((row-i).toString()+(col+i).toString(),obj.color);
+					if(!sameColor(gameBoardArr,row-i,col+i,obj.color)){
+						obj.targetsArr.push((row-i).toString()+(col+i).toString());
+					}
+					break;
 				}
-				break;
 			}
-		}
-	}
-
-	function diagonalDownTargets(gameBoardArr, row, col, dist){
-		obj = gameBoardArr[row][col];
-		for(var i = 1; i < dist; i++){
-			if (inbounds(row+i, col-i) && !gameBoardArr[row+i][col-i]){
-				obj.targetsArr.push((row+i).toString()+(col-i).toString());
-				threatenedArrays((row+i).toString()+(col-i).toString(),obj.color);
-			} else if(inbounds(row+i, col-i) && gameBoardArr[row+i][col-i]){
-				threatenedArrays((row+i).toString()+(col-i).toString(),obj.color);
-				if(!sameColor(gameBoardArr,row+i,col-i,obj.color)){
+			for(var i = 1; i < dist; i++){
+				if (inbounds(row+i, col-i) && !gameBoardArr[row+i][col-i]){
 					obj.targetsArr.push((row+i).toString()+(col-i).toString());
+					threatenedArrays((row+i).toString()+(col-i).toString(),obj.color);
+				} else if(inbounds(row+i, col-i) && gameBoardArr[row+i][col-i]){
+					threatenedArrays((row+i).toString()+(col-i).toString(),obj.color);
+					if(!sameColor(gameBoardArr,row+i,col-i,obj.color)){
+						obj.targetsArr.push((row+i).toString()+(col-i).toString());
+					}
+					break;
 				}
-				break;
 			}
-		}
-		for(var i = 1; i < dist; i++){
-			if (inbounds(row+i, col+i) && !gameBoardArr[row+i][col+i]){
-				obj.targetsArr.push((row+i).toString()+(col+i).toString());
-				threatenedArrays((row+i).toString()+(col+i).toString(),obj.color);
-			} else if(inbounds(row+i, col+i) && gameBoardArr[row+i][col+i]){
-				threatenedArrays((row+i).toString()+(col+i).toString(),obj.color);
-				if(!sameColor(gameBoardArr,row+i,col+i,obj.color)){
+			for(var i = 1; i < dist; i++){
+				if (inbounds(row+i, col+i) && !gameBoardArr[row+i][col+i]){
 					obj.targetsArr.push((row+i).toString()+(col+i).toString());
+					threatenedArrays((row+i).toString()+(col+i).toString(),obj.color);
+				} else if(inbounds(row+i, col+i) && gameBoardArr[row+i][col+i]){
+					threatenedArrays((row+i).toString()+(col+i).toString(),obj.color);
+					if(!sameColor(gameBoardArr,row+i,col+i,obj.color)){
+						obj.targetsArr.push((row+i).toString()+(col+i).toString());
+					}
+					break;
 				}
-				break;
 			}
 		}
 	}
 
-	function pawnAttackTargets(gameBoardArr, row, col){
-		obj = gameBoardArr[row][col];
-		if(obj.color === 'black'){
-			threatenedArrays((row+1).toString()+(col-1).toString(), 'black');
-			threatenedArrays((row+1).toString()+(col+1).toString(), 'black');
-			if(inbounds(row+1,col+1) && gameBoardArr[row+1][col+1] && !sameColor(gameBoardArr,row+1,col+1,obj.color)){
-				obj.targetsArr.push((row+1).toString()+(col+1).toString());
+	function pawnTargetsWrapper(gameBoardArr){
+		return function(row, col){
+			obj = gameBoardArr[row][col];
+			if(obj.color === 'black'){
+				threatenedArrays((row+1).toString()+(col-1).toString(), 'black');
+				threatenedArrays((row+1).toString()+(col+1).toString(), 'black');
+				if(inbounds(row+1,col+1) && gameBoardArr[row+1][col+1] && !sameColor(gameBoardArr,row+1,col+1,obj.color)){
+					obj.targetsArr.push((row+1).toString()+(col+1).toString());
+				}
+				if(inbounds(row+1,col-1) && gameBoardArr[row+1][col-1] && !sameColor(gameBoardArr,row+1,col-1,obj.color)){
+					obj.targetsArr.push((row+1).toString()+(col-1).toString());
+				}
+			} else if(obj.color === 'white'){
+				threatenedArrays((row-1).toString()+(col-1).toString(), 'white');
+				threatenedArrays((row-1).toString()+(col+1).toString(), 'white');
+				if(inbounds(row-1,col+1) && gameBoardArr[row-1][col+1] && !sameColor(gameBoardArr,row-1,col+1,obj.color)){
+					obj.targetsArr.push((row-1).toString()+(col+1).toString());
+				}
+				if(inbounds(row-1,col-1) && gameBoardArr[row-1][col-1] && !sameColor(gameBoardArr,row-1,col-1,obj.color)){
+					obj.targetsArr.push((row-1).toString()+(col-1).toString());
+				}
 			}
-			if(inbounds(row+1,col-1) && gameBoardArr[row+1][col-1] && !sameColor(gameBoardArr,row+1,col-1,obj.color)){
-				obj.targetsArr.push((row+1).toString()+(col-1).toString());
-			}
-		} else if(obj.color === 'white'){
-			threatenedArrays((row-1).toString()+(col-1).toString(), 'white');
-			threatenedArrays((row-1).toString()+(col+1).toString(), 'white');
-			if(inbounds(row-1,col+1) && gameBoardArr[row-1][col+1] && !sameColor(gameBoardArr,row-1,col+1,obj.color)){
-				obj.targetsArr.push((row-1).toString()+(col+1).toString());
-			}
-			if(inbounds(row-1,col-1) && gameBoardArr[row-1][col-1] && !sameColor(gameBoardArr,row-1,col-1,obj.color)){
-				obj.targetsArr.push((row-1).toString()+(col-1).toString());
+			if(obj.color === 'black'){
+				if(inbounds(row+1,col) && !gameBoardArr[row+1][col]){
+					obj.targetsArr.push((row+1).toString()+col.toString());
+				}
+				if (obj.initialPosition){
+					if(!gameBoardArr[row+2][col]){
+						obj.targetsArr.push((row+2).toString()+col.toString());
+					}
+				}
+			} else if(obj.color === 'white'){
+				if(inbounds(row-1,col) && !gameBoardArr[row-1][col]){
+					obj.targetsArr.push((row-1).toString()+col.toString());
+				}
+				if (obj.initialPosition){
+					if(!gameBoardArr[row-2][col]){
+						obj.targetsArr.push((row-2).toString()+col.toString());
+					}
+				}
 			}
 		}
 	}
 
-	function pawnMoveTargets(gameBoardArr, row, col){
-		obj = gameBoardArr[row][col];
-		if(obj.color === 'black'){
-			if(inbounds(row+1,col) && !gameBoardArr[row+1][col]){
-				obj.targetsArr.push((row+1).toString()+col.toString());
-			}
-			if (obj.initialPosition){
-				if(!gameBoardArr[row+2][col]){
-					obj.targetsArr.push((row+2).toString()+col.toString());
-				}
-			}
-		} else if(obj.color === 'white'){
-			if(inbounds(row-1,col) && !gameBoardArr[row-1][col]){
-				obj.targetsArr.push((row-1).toString()+col.toString());
-			}
-			if (obj.initialPosition){
-				if(!gameBoardArr[row-2][col]){
-					obj.targetsArr.push((row-2).toString()+col.toString());
-				}
-			}
-		}
-	}
+	// function pawnAttackTargets(gameBoardArr, row, col){
+	// 	obj = gameBoardArr[row][col];
+	// 	if(obj.color === 'black'){
+	// 		threatenedArrays((row+1).toString()+(col-1).toString(), 'black');
+	// 		threatenedArrays((row+1).toString()+(col+1).toString(), 'black');
+	// 		if(inbounds(row+1,col+1) && gameBoardArr[row+1][col+1] && !sameColor(gameBoardArr,row+1,col+1,obj.color)){
+	// 			obj.targetsArr.push((row+1).toString()+(col+1).toString());
+	// 		}
+	// 		if(inbounds(row+1,col-1) && gameBoardArr[row+1][col-1] && !sameColor(gameBoardArr,row+1,col-1,obj.color)){
+	// 			obj.targetsArr.push((row+1).toString()+(col-1).toString());
+	// 		}
+	// 	} else if(obj.color === 'white'){
+	// 		threatenedArrays((row-1).toString()+(col-1).toString(), 'white');
+	// 		threatenedArrays((row-1).toString()+(col+1).toString(), 'white');
+	// 		if(inbounds(row-1,col+1) && gameBoardArr[row-1][col+1] && !sameColor(gameBoardArr,row-1,col+1,obj.color)){
+	// 			obj.targetsArr.push((row-1).toString()+(col+1).toString());
+	// 		}
+	// 		if(inbounds(row-1,col-1) && gameBoardArr[row-1][col-1] && !sameColor(gameBoardArr,row-1,col-1,obj.color)){
+	// 			obj.targetsArr.push((row-1).toString()+(col-1).toString());
+	// 		}
+	// 	}
+	// }
+
+	// function pawnMoveTargets(gameBoardArr, row, col){
+	// 	obj = gameBoardArr[row][col];
+	// 	if(obj.color === 'black'){
+	// 		if(inbounds(row+1,col) && !gameBoardArr[row+1][col]){
+	// 			obj.targetsArr.push((row+1).toString()+col.toString());
+	// 		}
+	// 		if (obj.initialPosition){
+	// 			if(!gameBoardArr[row+2][col]){
+	// 				obj.targetsArr.push((row+2).toString()+col.toString());
+	// 			}
+	// 		}
+	// 	} else if(obj.color === 'white'){
+	// 		if(inbounds(row-1,col) && !gameBoardArr[row-1][col]){
+	// 			obj.targetsArr.push((row-1).toString()+col.toString());
+	// 		}
+	// 		if (obj.initialPosition){
+	// 			if(!gameBoardArr[row-2][col]){
+	// 				obj.targetsArr.push((row-2).toString()+col.toString());
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	function knightTargets(gameBoardArr, row, col){
 		obj = gameBoardArr[row][col];
@@ -390,33 +440,14 @@ $(document).ready(function(){
 				}
 			}
 		}
-
 	}
 
-	function makeTargets(gameBoardArr, row, col){
-		obj = gameBoardArr[row][col];
-		obj.targetsArr = [];
-		if(obj.type === 'pawn'){
-			pawnMoveTargets(gameBoardArr, row, col);
-			pawnAttackTargets(gameBoardArr, row, col);
-		} else if(obj.type === 'rook'){
-			horizontalTargets(gameBoardArr, row, col, 8);
-			verticalTargets(gameBoardArr, row, col, 8);
-		} else if(obj.type === 'knight'){
-			knightTargets(gameBoardArr, row, col);
-		} else if(obj.type === 'bishop'){
-			diagonalDownTargets(gameBoardArr, row, col, 8);
-			diagonalUpTargets(gameBoardArr, row, col, 8);
-		} else if(obj.type === 'queen'){
-			horizontalTargets(gameBoardArr, row, col, 8);
-			verticalTargets(gameBoardArr, row, col, 8);
-			diagonalDownTargets(gameBoardArr, row, col, 8);
-			diagonalUpTargets(gameBoardArr, row, col, 8);
-		} else if(obj.type === 'king'){
-			horizontalTargets(gameBoardArr, row, col, 2);
-			verticalTargets(gameBoardArr, row, col, 2);
-			diagonalDownTargets(gameBoardArr, row, col, 2);
-			diagonalUpTargets(gameBoardArr, row, col, 2);
+	function queenTargetsWrapper(gameBoardArr, dist){ 
+		return function(row, col){
+			var tar1 = straightTargetsWrapper(gameBoardArr, dist);
+			var tar2 = diagonalTargetsWrapper(gameBoardArr, dist);
+			tar1.call(this,row, col);
+			tar2.call(this,row, col);
 		}
 	}
 
@@ -426,7 +457,8 @@ $(document).ready(function(){
 		for(var i = 0; i < gameBoardArr.length; i++){
 			for(var j = 0; j < gameBoardArr[i].length; j++){
 				if(gameBoardArr[i][j]){
-					makeTargets(gameBoardArr,i,j);
+					gameBoardArr[i][j].targetsArr = [];
+					gameBoardArr[i][j].getTargets(i, j);
 				}
 			}
 		}

@@ -6,6 +6,14 @@ h1	{
 	font-size: 4em;
 	color: #260126;
 }
+
+p	{
+	text-align: center;
+	font-family: 'Cinzel';
+	font-weight: bold;
+	font-size: 1em;
+	color: #260126;
+}
 .mute{
 	width: 100%
 }

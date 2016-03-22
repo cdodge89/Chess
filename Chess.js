@@ -109,10 +109,11 @@ $(document).ready(function(){
 			makeBoardTargets(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr);
 			modifyKingMovement(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr);
 			global.threatenedByBlackArr = [];
+			global.threatenedByWhiteArr = [];
 		}
 
 		if(!global.whiteMoveFlag){
-			moveAPiece('black', global.gameBoardArr, global.selectedPiece, global.whiteMoveFlag);
+			moveAPiece('black', global.gameBoardArr, global.selectedPiece);
 			if(global.whiteMoveFlag){
 				global.whiteMoveFlag = false;
 			} else {
@@ -121,6 +122,7 @@ $(document).ready(function(){
 			makeBoardTargets(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr);
 			modifyKingMovement(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr);
 			global.threatenedByBlackArr = [];
+			global.threatenedByWhiteArr = [];
 		}
 	});
 
@@ -158,6 +160,10 @@ $(document).ready(function(){
 					moveablePieces.push(gameBoardArr[i][j]);
 				}
 			}
+		}
+		if (moveablePieces.length === 0){
+			alert('Checkmate, white wins!');
+			return;
 		}
 		var chosenPiece = moveablePieces[getRandomInt(0,moveablePieces.length)];
 		var chosenCell = chosenPiece.position;

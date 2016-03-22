@@ -5,10 +5,6 @@ $(document).ready(function(){
 		gameBoardArr: [],
 		threatenedByWhiteArr: [],
 		threatenedByBlackArr: [],
-		historyArr: [],
-		redoArr: [],
-		whiteKingInCheckFlag: false,
-		blackKingInCheckFlag: false
 	}
 
 	function Piece (id, color, type, image, position){
@@ -112,24 +108,27 @@ $(document).ready(function(){
 			}
 			makeBoardTargets(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr);
 			modifyKingMovement(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr);
-			console.log('TbB: ',global.threatenedByBlackArr);
 			global.threatenedByBlackArr = [];
-			console.log('TbB: ',global.threatenedByBlackArr);
 		}
-		// makeBoardTargets(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr);
-		// modifyKingMovement(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr);
-		// console.log('TbB: ',global.threatenedByBlackArr);
-		// global.threatenedByBlackArr = [];
-		// console.log('TbB: ',global.threatenedByBlackArr);
-	// console.log(global.threatenedByWhiteArr);
+
+		if(!global.whiteMoveFlag){
+			moveAPiece('black', global.gameBoardArr, global.selectedPiece, global.whiteMoveFlag);
+			if(global.whiteMoveFlag){
+				global.whiteMoveFlag = false;
+			} else {
+				global.whiteMoveFlag = true;
+			}
+			makeBoardTargets(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr);
+			modifyKingMovement(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr);
+			global.threatenedByBlackArr = [];
+		}
 	});
 
-	console.log(global.gameBoardArr);
-	console.log(global.threatenedByBlackArr);
-	console.log(global.threatenedByWhiteArr);
-
-
 //=================================FUNCTIONS==============================
+	function getRandomInt(min, max) {
+	  return Math.floor(Math.random() * (max - min)) + min;
+	}
+
 	function modifyKingMovement(gameBoardArr, threatenedByWhiteArr, threatenedByBlackArr){
 		for(var i = 0; i < gameBoardArr.length; i++){
 			for(var j = 0; j < gameBoardArr[i].length; j++){
@@ -137,15 +136,39 @@ $(document).ready(function(){
 					if(gameBoardArr[i][j].color === 'black'){
 						var diff = $(gameBoardArr[i][j].targetsArr).not(threatenedByWhiteArr).get();
 						gameBoardArr[i][j].targetsArr = diff;
-						console.log('blackKing move: ',gameBoardArr[i][j].targetsArr);
 					} else if (gameBoardArr[i][j].color === 'white'){
 						var diff = $(gameBoardArr[i][j].targetsArr).not(threatenedByBlackArr).get();
 						gameBoardArr[i][j].targetsArr = diff;
-						console.log('whiteKing move: ',gameBoardArr[i][j].targetsArr);
 					}
 				}
 			}
 		}
+	}
+
+	function clickCell(id){
+		idStr = id.toString();
+		$('#'+idStr).click();
+	}
+
+	function moveAPiece(color, gameBoardArr, selectedPiece, whiteMoveFlag){
+		var moveablePieces = [];
+		for (var i = 0; i < gameBoardArr.length; i++){
+			for (var j = 0; j < gameBoardArr[i].length; j++){
+				if(gameBoardArr[i][j] && gameBoardArr[i][j].color === color && gameBoardArr[i][j].targetsArr.length > 0){
+					moveablePieces.push(gameBoardArr[i][j]);
+				}
+			}
+		}
+		var chosenPiece = moveablePieces[getRandomInt(0,moveablePieces.length)];
+		var chosenCell = chosenPiece.position;
+		var chosenMove = chosenPiece.targetsArr[getRandomInt(0,chosenPiece.targetsArr.length)];
+		var chosenMoveRow = chosenMove[0];
+		var chosenMoveCol = chosenMove[1];
+		selectedPiece = chosenPiece;
+		if(gameBoardArr[chosenMoveRow][chosenMoveCol]){
+			capturePiece(gameBoardArr[chosenMoveRow][chosenMoveCol], gameBoardArr);
+		}
+		selectedPiece.move(chosenMoveRow,chosenMoveCol,gameBoardArr);
 	}
 
 	function capitalize(str){
@@ -441,16 +464,14 @@ $(document).ready(function(){
 
 	function queenTargetsWrapper(gameBoardArr, dist){ 
 		return function(row, col, threatenedByWhiteArr, threatenedByBlackArr){
-			var tar1 = straightTargetsWrapper(gameBoardArr, dist);
-			var tar2 = diagonalTargetsWrapper(gameBoardArr, dist);
-			tar1.call(this,row, col, threatenedByWhiteArr, threatenedByBlackArr);
-			tar2.call(this,row, col, threatenedByWhiteArr, threatenedByBlackArr);
+			var targets1 = straightTargetsWrapper(gameBoardArr, dist);
+			var targets2 = diagonalTargetsWrapper(gameBoardArr, dist);
+			targets1.call(this,row, col, threatenedByWhiteArr, threatenedByBlackArr);
+			targets2.call(this,row, col, threatenedByWhiteArr, threatenedByBlackArr);
 		}
 	}
 
 	function makeBoardTargets(gameBoardArr, threatenedByWhiteArr, threatenedByBlackArr){
-		// threatenedByWhiteArr = [];
-		// threatenedByBlackArr = [];
 		for(var i = 0; i < gameBoardArr.length; i++){
 			for(var j = 0; j < gameBoardArr[i].length; j++){
 				if(gameBoardArr[i][j]){

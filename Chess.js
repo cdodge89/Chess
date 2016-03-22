@@ -1,121 +1,150 @@
 $(document).ready(function(){
 	var global = {
 		whiteMoveFlag: true,
-		selectedPiece: null,
+		selectedPiece: undefined,
 		gameBoardArr: [],
 		threatenedByWhiteArr: [],
 		threatenedByBlackArr: [],
 		historyArr: [],
 		redoArr: [],
+		whiteKingInCheckFlag: false,
+		blackKingInCheckFlag: false
 	}
 
-	var imagePaths = {
-		whitePawn:'<img src="./Assets/whitePawn.png">',
-		whiteRook:'<img src="./Assets/whiteRook.png">',
-		whiteBishop:'<img src="./Assets/whiteBishop.png">',
-		whiteKnight:'<img src="./Assets/whiteKnight.png">',
-		whiteQueen:'<img src="./Assets/whiteQueen.png">',
-		wKing:'<img src="./Assets/whiteKing.png">',
-		blackPawn:'<img src="./Assets/blackPawn.png">',
-		blackRook:'<img src="./Assets/blackRook.png">',
-		blackBishop:'<img src="./Assets/blackBishop.png">',
-		blackKnight:'<img src="./Assets/blackKnight.png">',
-		blackQueen:'<img src="./Assets/blackQueen.png">',
-		blackKing:'<img src="./Assets/blackKing.png">',
-	}
-
-	global.gameBoardArr = makeGameBoard(global.gameBoardArr, 8, 8);
-	global.gameBoardArr = initializePieces(global.gameBoardArr, 8, 8);
-	console.log(global.gameBoardArr);
-
-	Piece.prototype.move = function (newRow, newCol, gameBoardArr){
-		pos = this.position;
-		row = +pos[0];
-		col = +pos[1];
-		putPieceInSquare(this,newRow,newCol,gameBoardArr);
-		emptySquare(row,col,gameBoardArr);
-		this.initialPosition = false;
-	}
-	Piece.prototype.initialPosition = true;
-//ask about queen inheriting twice
-	//================CONSTRUCTOR======================================
 	function Piece (id, color, type, image, position){
 		this.id = id;
 		this.color = color;
 		this.type = type;
 		this.image = image;
 		this.position = position;
+		this.targetsArr = [];
+		this.initialPosition = true;
+		this.move = function (newRow, newCol, gameBoardArr){
+			pos = this.position;
+			row = +pos[0];
+			col = +pos[1];
+			putPieceInSquare(this);
+			this.initialPosition = false;
+			emptySquare(row,col,gameBoardArr);
+			
+			function putPieceInSquare(piece){
+				$("#"+newRow.toString()+newCol.toString()).append(piece.image);
+				piece.position = newRow.toString()+newCol.toString();
+				gameBoardArr[newRow][newCol] = piece;
+			}
+
+			function emptySquare(){
+				$("#"+row.toString()+col.toString()).text('');
+				gameBoardArr[row][col] = undefined;
+			}
+		}
+		this.addToThreatenedArrays = function (id, threatenedByWhiteArr, threatenedByBlackArr){
+		if (this.color === 'black'){
+			threatenedByBlackArr.push(id);
+		} else if (this.color === 'white'){
+			threatenedByWhiteArr.push(id);
+		}
+	}
 	}
 
-	var Pawn = Object.create(Piece);
-	console.log(whitePawn);
-
-	blackPawn = clone(whitePawn);
-	blackPawn.color = 'black';
-	console.log(blackPawn);
-
-	Object.prototype.create = function(object){
-		constructor.prototype = object;
-	    return new constructor(args);
+	function Pawn (id, color, type, image, position){
+		Piece.call(this, id, color, type, image, position);
 	}
 
-	var blackPawn1 = Object.create(Pawn, ['white'], pawnConstructor);
-
-	function pawnConstructor(args){
-		this.color = args[0];
+	function Rook (id, color, type, image, position){
+		Piece.call(this, id, color, type, image, position);
 	}
 
-//===================================CLICK LISTENERS=========================================
+	function Knight (id, color, type, image, position){
+		Piece.call(this, id, color, type, image, position);
+	}
+
+	function Bishop (id, color, type, image, position){
+		Piece.call(this, id, color, type, image, position);
+	}
+
+	function Queen (id, color, type, image, position){
+		Piece.call(this, id, color, type, image, position);
+	}
+
+	function King (id, color, type, image, position){
+		Piece.call(this, id, color, type, image, position);
+	}
+
+	Object.create = function (object) {
+        function Prot() {}
+        Prot.prototype = object;
+        return new Prot();
+    } 
+
+	Pawn.prototype.getTargets = pawnTargetsWrapper(global.gameBoardArr);
+	Rook.prototype.getTargets = straightTargetsWrapper(global.gameBoardArr, 8);
+	Knight.prototype.getTargets = knightTargetsWrapper(global.gameBoardArr);
+	Bishop.prototype.getTargets = diagonalTargetsWrapper(global.gameBoardArr, 8);
+	Queen.prototype.getTargets = queenTargetsWrapper(global.gameBoardArr, 8);
+	King.prototype.getTargets = queenTargetsWrapper(global.gameBoardArr, 2);
+
+	makeGameBoard(global.gameBoardArr, 8, 8);
+
+	placePieces(global.gameBoardArr);
+
+	makeBoardTargets(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr);
+
 	$(".square").on('click', function(){
 		var position = this.id;
-		var row = position[0];
-		var col = position[1];
-		var piece = global.gameBoardArr[row][col].piece;
-		console.log(piece);
-		if(piece === null && (!$(this).hasClass("highlight-yellow") && !$(this).hasClass("highlight-red"))){
+		var row = +position[0];
+		var col = +position[1];
+		var obj = global.gameBoardArr[row][col];
+		if(global.gameBoardArr[row][col] && !$(this).hasClass('highlight-yellow') && (global.whiteMoveFlag && obj.color === 'white' || !global.whiteMoveFlag && obj.color === 'black')){
 			unhighlight();
-			global.selectedPiece = null;
-		} else if (piece !== null && !$(this).hasClass("highlight-red")) {
+			global.selectedPiece = global.gameBoardArr[row][col];
+			highlightTargets(global.gameBoardArr[row][col].targetsArr);
+		} else if($(this).hasClass('highlight-yellow')){
 			unhighlight();
-			highlightYellow(row,col);
-			highlightMoves(piece, global.gameBoardArr);
-			global.selectedPiece = piece;
-		} else if ($(this).hasClass("highlight-red")){
-			unhighlight();
-			capturePiece(piece, global.gameBoardArr);
-			movePiece(row, col, global.selectedPiece, global.gameBoardArr);
-			global.selectedPiece = null;
-		} else if ($(this).hasClass("highlight-yellow")){
-			unhighlight();
-			movePiece(row, col, global.selectedPiece, global.gameBoardArr);
-			global.selectedPiece = null;
+			if(global.gameBoardArr[row][col]){
+				capturePiece(global.gameBoardArr[row][col], global.gameBoardArr);
+			}
+			global.selectedPiece.move(row,col,global.gameBoardArr);
+			if(global.whiteMoveFlag){
+				global.whiteMoveFlag = false;
+			} else {
+				global.whiteMoveFlag = true;
+			}
+			makeBoardTargets(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr);
+			modifyKingMovement(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr);
+			console.log('TbB: ',global.threatenedByBlackArr);
+			global.threatenedByBlackArr = [];
+			console.log('TbB: ',global.threatenedByBlackArr);
 		}
+		// makeBoardTargets(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr);
+		// modifyKingMovement(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr);
+		// console.log('TbB: ',global.threatenedByBlackArr);
+		// global.threatenedByBlackArr = [];
+		// console.log('TbB: ',global.threatenedByBlackArr);
+	// console.log(global.threatenedByWhiteArr);
 	});
 
-	$("#mute").click( function (){
-	    if( $("audio").prop('muted') )
-	    {	
-	    	console.log("unmute");
-	        $("audio").prop('muted', false);
-	        $(this).removeClass('glyphicon-volume-up');
-	        $(this).addClass('glyphicon-volume-off');
-	    }
-
-	    else {
-	    	console.log("mute");
-	    $("audio").prop('muted', true);
-	    $(this).removeClass('glyphicon-volume-off');
-	    $(this).addClass('glyphicon-volume-up');
-    }
-
-});
+	console.log(global.gameBoardArr);
+	console.log(global.threatenedByBlackArr);
+	console.log(global.threatenedByWhiteArr);
 
 
-
-//======================================FUNCTIONS=============================================
-	function highlightVertical(dist, gameBoard){
-		for (var i = 0; i < dist; i++){
-
+//=================================FUNCTIONS==============================
+	function modifyKingMovement(gameBoardArr, threatenedByWhiteArr, threatenedByBlackArr){
+		for(var i = 0; i < gameBoardArr.length; i++){
+			for(var j = 0; j < gameBoardArr[i].length; j++){
+				if (gameBoardArr[i][j] && gameBoardArr[i][j].type === 'king'){
+					if(gameBoardArr[i][j].color === 'black'){
+						var diff = $(gameBoardArr[i][j].targetsArr).not(threatenedByWhiteArr).get();
+						gameBoardArr[i][j].targetsArr = diff;
+						console.log('blackKing move: ',gameBoardArr[i][j].targetsArr);
+					} else if (gameBoardArr[i][j].color === 'white'){
+						var diff = $(gameBoardArr[i][j].targetsArr).not(threatenedByBlackArr).get();
+						gameBoardArr[i][j].targetsArr = diff;
+						console.log('whiteKing move: ',gameBoardArr[i][j].targetsArr);
+					}
+				}
+			}
 		}
 	}
 
@@ -132,401 +161,14 @@ $(document).ready(function(){
 		} else {
 			$("#white-prison").append('<li>' + piece.image + '</li>');
 		}
-		emptySquare(row,col,gameBoardArr);
-	}
-
-	function emptySquare(row, col, gameBoardArr){
 		$("#"+row.toString()+col.toString()).text('');
-		gameBoardArr[row][col].piece = null;
+		gameBoardArr[row][col] = undefined;
 	}
 
-	function fillThreatenedArrays(threatenedByWhiteArr, threatenedByBlackArr, gameBoardArr){
-		for(var i = 0; i < gameBoardArr.length; i++){
-			for(var j = 0; j < gameBoardArr[i].length; j++){
-				
-			}
-		}
-	}
-
-	function highlightMoves(piece, gameBoardArr){
-		if (piece.type === 'pawn'){
-			highlightMovesPawn(piece, gameBoardArr);
-		} else if(piece.type === 'rook'){
-			highlightMovesRook(piece, gameBoardArr);
-		} else if(piece.type === 'knight'){
-			highlightMovesKnight(piece, gameBoardArr);
-		} else if(piece.type === 'bishop'){
-			highlightMovesBishop(piece, gameBoardArr);
-		} else if(piece.type === 'queen'){
-			highlightMovesQueen(piece, gameBoardArr);
-		} else if(piece.type === 'king'){
-			highlightMovesKing(piece, gameBoardArr);
-		}	
-	}
-
-	function highlightMovesBishop(piece, gameBoardArr){
-		var row = +piece.position[0];
-		var col = +piece.position[1];
-		for (var i = 1; i < 8; i++){
-			if(inbounds(row+i,col+i) && isEmpty(row+i,col+i,gameBoardArr)){
-				highlightYellow(row+i,col+i);
-			}
-			else if(inbounds(row+i,col+i) && !isEmpty(row+i,col+i,gameBoardArr) && !sameColor(piece,row+i,col+i,gameBoardArr)){
-				highlightRed(row+i,col+i);
-				break;
-			}
-			else{
-				break;
-			}
-		}
-		for (var i = 1; i < 8; i++){
-			if(inbounds(row+i,col-i) && isEmpty(row+i,col-i,gameBoardArr)){
-				highlightYellow(row+i,col-i);
-			}
-			else if(inbounds(row+i,col-i) && !isEmpty(row+i,col-i,gameBoardArr) && !sameColor(piece,row+i,col-i,gameBoardArr)){
-				highlightRed(row+i,col-i);
-				break;
-			}
-			else{
-				break;
-			}
-		}
-		for (var i = 1; i < 8; i++){
-			if(inbounds(row-i,col+i) && isEmpty(row-i,col+i,gameBoardArr)){
-				highlightYellow(row-i,col+i);
-			}
-			else if(inbounds(row-i,col+i) && !isEmpty(row-i,col+i,gameBoardArr) && !sameColor(piece,row-i,col+i,gameBoardArr)){
-				highlightRed(row-i,col+i);
-				break;
-			}
-			else{
-				break;
-			}
-		}
-		for (var i = 1; i < 8; i++){
-			if(inbounds(row-i,col-i) && isEmpty(row-i,col-i,gameBoardArr)){
-				highlightYellow(row-i,col-i);
-			}
-			else if(inbounds(row-i,col-i) && !isEmpty(row-i,col-i,gameBoardArr) && !sameColor(piece,row-i,col-i,gameBoardArr)){
-				highlightRed(row-i,col-i);
-				break;
-			}
-			else{
-				break;
-			}
-		}
-	}
-
-	function highlightMovesKing(piece, gameBoardArr){
-		var row = +piece.position[0];
-		var col = +piece.position[1];
-		if(inbounds(row+1,col) && isEmpty(row+1,col,gameBoardArr)){
-			highlightYellow(row+1,col);
-		} else if(inbounds(row+1,col) && !isEmpty(row+1,col,gameBoardArr) && !sameColor(piece,row+1,col,gameBoardArr)){
-			highlightRed(row+1,col);
-		}
-		if(inbounds(row-1,col) && isEmpty(row-1,col,gameBoardArr)){
-			highlightYellow(row-1,col);
-		} else if(inbounds(row-1,col) && !isEmpty(row-1,col,gameBoardArr) && !sameColor(piece,row-1,col,gameBoardArr)){
-			highlightRed(row-1,col);
-		}
-		if(inbounds(row,col+1) && isEmpty(row,col+1,gameBoardArr)){
-			highlightYellow(row,col+1);
-		} else if(inbounds(row,col+1) && !isEmpty(row,col+1,gameBoardArr) && !sameColor(piece,row,col+1,gameBoardArr)){
-			highlightRed(row,col+1);
-		}
-		if(inbounds(row,col-1) && isEmpty(row,col-1,gameBoardArr)){
-			highlightYellow(row,col-1);
-		} else if(inbounds(row,col-1) && !isEmpty(row,col-1,gameBoardArr) && !sameColor(piece,row,col-1,gameBoardArr)){
-			highlightRed(row,col-1);
-		}
-		if(inbounds(row+1,col+1) && isEmpty(row+1,col+1,gameBoardArr)){
-			highlightYellow(row+1,col+1);
-		} else if(inbounds(row+1,col+1) && !isEmpty(row+1,col+1,gameBoardArr) && !sameColor(piece,row+1,col+1,gameBoardArr)){
-			highlightRed(row+1,col+1);
-		}
-		if(inbounds(row+1,col-1) && isEmpty(row+1,col-1,gameBoardArr)){
-			highlightYellow(row+1,col-1);
-		} else if(inbounds(row+1,col-1) && !isEmpty(row+1,col-1,gameBoardArr) && !sameColor(piece,row+1,col-1,gameBoardArr)){
-			highlightRed(row+1,col-1);
-		}
-		if(inbounds(row-1,col+1) && isEmpty(row-1,col+1,gameBoardArr)){
-			highlightYellow(row-1,col+1);
-		} else if(inbounds(row-1,col+1) && !isEmpty(row-1,col+1,gameBoardArr) && !sameColor(piece,row-1,col+1,gameBoardArr)){
-			highlightRed(row-1,col+1);
-		}
-		if(inbounds(row-1,col-1) && isEmpty(row-1,col-1,gameBoardArr)){
-			highlightYellow(row-1,col-1);
-		} else if(inbounds(row-1,col-1) && !isEmpty(row-1,col-1,gameBoardArr) && !sameColor(piece,row-1,col-1,gameBoardArr)){
-			highlightRed(row-1,col-1);
-		}
-	}
-
-	function highlightMovesKnight(piece, gameBoardArr){
-		var row = +piece.position[0];
-		var col = +piece.position[1];
-		if(inbounds(row-2,col-1) && isEmpty(row-2,col-1,gameBoardArr)){
-			highlightYellow(row-2,col-1);
-		} else if (inbounds(row-2,col-1) && !isEmpty(row-2,col-1,gameBoardArr) && !sameColor(piece,row-2,col-1,gameBoardArr)){
-			highlightRed(row-2,col-1);
-		}
-
-		if(inbounds(row-2,col+1) && isEmpty(row-2,col+1,gameBoardArr)){
-			highlightYellow(row-2,col+1);
-		} else if (inbounds(row-2,col+1) && !isEmpty(row-2,col+1,gameBoardArr) && !sameColor(piece,row-2,col+1,gameBoardArr)){
-			highlightRed(row-2,col+1);
-		}
-		if(inbounds(row-1,col+2) && isEmpty(row-1,col+2,gameBoardArr)){
-			highlightYellow(row-1,col+2);
-		} else if (inbounds(row-1,col+2) && !isEmpty(row-1,col+2,gameBoardArr) && !sameColor(piece,row-1,col+2,gameBoardArr)){
-			highlightRed(row-1,col+2);
-		}
-		if(inbounds(row+1,col+2) && isEmpty(row+1,col+2,gameBoardArr)){
-			highlightYellow(row+1,col+2);
-		} else if (inbounds(row+1,col+2) && !isEmpty(row+1,col+2,gameBoardArr) && !sameColor(piece,row+1,col+2,gameBoardArr)){
-			highlightRed(row+1,col+2);
-		}
-		if(inbounds(row+2,col+1) && isEmpty(row+2,col+1,gameBoardArr)){
-			highlightYellow(row+2,col+1);
-		} else if (inbounds(row+2,col+1) && !isEmpty(row+2,col+1,gameBoardArr) && !sameColor(piece,row+2,col+1,gameBoardArr)){
-			highlightRed(row+2,col+1);
-		}
-		if(inbounds(row+2,col-1) && isEmpty(row+2,col-1,gameBoardArr)){
-			highlightYellow(row+2,col-1);
-		} else if (inbounds(row+2,col-1) && !isEmpty(row+2,col-1,gameBoardArr) && !sameColor(piece,row+2,col-1,gameBoardArr)){
-			highlightRed(row+2,col-1);
-		}
-		if(inbounds(row+1,col-2) && isEmpty(row+1,col-2,gameBoardArr)){
-			highlightYellow(row+1,col-2);
-		} else if (inbounds(row+1,col-2) && !isEmpty(row+1,col-2,gameBoardArr) && !sameColor(piece,row+1,col-2,gameBoardArr)){
-			highlightRed(row+1,col-2);
-		}
-		if(inbounds(row-1,col-2) && isEmpty(row-1,col-2,gameBoardArr)){
-			highlightYellow(row-1,col-2);
-		} else if (inbounds(row-1,col-2) && !isEmpty(row-1,col-2,gameBoardArr) && !sameColor(piece,row-1,col-2,gameBoardArr)){
-			highlightRed(row-1,col-2);
-		}
-	}
-
-	function highlightMovesPawn(piece, gameBoardArr){
-		var row = +piece.position[0];
-		var col = +piece.position[1];
-		if (inbounds(row+1,col) && piece.color === 'black' && isEmpty(row+1,col,gameBoardArr)){
-			highlightYellow(row+1,col);
-			if (piece.initialPos && isEmpty(row+2, col,gameBoardArr)){
-				highlightYellow(row+2,col);
-			}
-			
-		} 
-		if(inbounds(row+1,col+1) && piece.color === 'black' && !isEmpty(row+1,col+1,gameBoardArr) && !sameColor(piece,row+1,col+1,gameBoardArr)) {
-			highlightRed(row+1,col+1);
-		} 
-		if(inbounds(row+1,col-1) && piece.color === 'black' && !isEmpty(row+1,col-1,gameBoardArr) && !sameColor(piece,row+1,col-1,gameBoardArr)){
-			highlightRed(row+1,col-1);
-		} 
-		if (inbounds(row-1,col) && piece.color === 'white' && isEmpty(row-1,col,gameBoardArr)){
-			highlightYellow(row-1,col);
-			if (piece.initialPos && isEmpty(row-2, col,gameBoardArr)){
-				highlightYellow(row-2,col);
-			}
-		} 
-		if(inbounds(row-1,col+1) && piece.color === 'white' && !isEmpty(row-1,col+1,gameBoardArr) && !sameColor(piece,row-1,col+1,gameBoardArr)){
-			highlightRed(row-1,col+1);
-		} 
-		if(inbounds(row-1,col-1) && piece.color === 'white' && !isEmpty(row-1,col-1,gameBoardArr) && !sameColor(piece,row-1,col-1,gameBoardArr)){
-			highlightRed(row-1,col-1);
-		}
-	}
-
-	function highlightMovesQueen(piece, gameBoardArr){
-		var row = +piece.position[0];
-		var col = +piece.position[1];
-		for (var i = 1; i < 8; i++){
-			if(inbounds(row+i,col) && isEmpty(row+i,col,gameBoardArr)){
-				highlightYellow(row+i,col); 
-			} else if (inbounds(row+i,col) && !isEmpty(row+i,col,gameBoardArr) && !sameColor(piece,row+i,col,gameBoardArr)){
-				highlightRed(row+i,col);
-				break;
-			} else{
-				break;
-			}
-		}
-
-		for (var i = 1; i < 8; i++){
-			if(inbounds(row-i,col) && isEmpty(row-i,col,gameBoardArr)){
-				highlightYellow(row-i,col); 
-			} else if (inbounds(row-i,col) && !isEmpty(row-i,col,gameBoardArr) && !sameColor(piece,row-i,col,gameBoardArr)){
-				highlightRed(row-i,col);
-				break;
-			} else{
-				break;
-			}
-		}
-
-		for (var i = 1; i < 8; i++){
-			if(inbounds(row,col+i) && isEmpty(row,col+i,gameBoardArr)){
-				highlightYellow(row,col+i); 
-			} else if (inbounds(row,col+i) && !isEmpty(row,col+i,gameBoardArr) && !sameColor(piece,row,col+i,gameBoardArr)){
-				highlightRed(row,col+i);
-				break;
-			} else{
-				break;
-			}
-		}
-
-		for (var i = 1; i < 8; i++){
-			if(inbounds(row,col-i) && isEmpty(row,col-i,gameBoardArr)){
-				highlightYellow(row,col-i);
-			} else if (inbounds(row,col-i) && !isEmpty(row,col-i,gameBoardArr) && !sameColor(piece,row,col-i,gameBoardArr)){
-				highlightRed(row,col-i);
-				break;
-			} else{
-				break;
-			}
-		}
-
-		for (var i = 1; i < 8; i++){
-			if(inbounds(row+i,col+i) && isEmpty(row+i,col+i,gameBoardArr)){
-				highlightYellow(row+i,col+i);
-			} else if (inbounds(row+i,col+i) && !isEmpty(row+i,col+i,gameBoardArr) && !sameColor(piece,row+i,col+i,gameBoardArr)){
-				highlightRed(row+i,col+i);
-				break;
-			} else{
-				break;
-			}
-		}
-		for (var i = 1; i < 8; i++){
-			if(inbounds(row+i,col-i) && isEmpty(row+i,col-i,gameBoardArr)){
-				highlightYellow(row+i,col-i);
-			} else if (inbounds(row+i,col-i) && !isEmpty(row+i,col-i,gameBoardArr) && !sameColor(piece,row+i,col-i,gameBoardArr)){
-				highlightRed(row+i,col-i);
-				break;
-			} else{
-				break;
-			}
-		}
-		for (var i = 1; i < 8; i++){
-			if(inbounds(row-i,col+i) && isEmpty(row-i,col+i,gameBoardArr)){
-				highlightYellow(row-i,col+i);
-			} else if (inbounds(row-i,col+i) && !isEmpty(row-i,col+i,gameBoardArr) && !sameColor(piece,row-i,col+i,gameBoardArr)){
-				highlightRed(row-i,col+i);
-				break;
-			} else{
-				break;
-			}
-		}
-		for (var i = 1; i < 8; i++){
-			if(inbounds(row-i,col-i) && isEmpty(row-i,col-i,gameBoardArr)){
-				highlightYellow(row-i,col-i);
-			} else if (inbounds(row-i,col-i) && !isEmpty(row-i,col-i,gameBoardArr) && !sameColor(piece,row-i,col-i,gameBoardArr)){
-				highlightRed(row-i,col-i);
-				break;
-			} else{
-				break;
-			}
-		}
-	}
-
-	function highlightMovesRook(piece, gameBoardArr){
-		var row = +piece.position[0];
-		var col = +piece.position[1];
-		for (var i = 1; i < 8; i++){
-			if(inbounds(row+i,col) && isEmpty(row+i,col,gameBoardArr)){
-				highlightYellow(row+i,col);
-			} else if (inbounds(row+i,col) && !isEmpty(row+i,col,gameBoardArr) && !sameColor(piece,row+i,col,gameBoardArr)){
-				highlightRed(row+i,col); 
-				break;
-			}
-			else{
-				break;
-			}
-		}
-		for (var i = 1; i < 8; i++){
-			if(inbounds(row-i,col) && isEmpty(row-i,col,gameBoardArr)){
-				highlightYellow(row-i,col);
-			} else if (inbounds(row-i,col) && !isEmpty(row-i,col,gameBoardArr) && !sameColor(piece,row-i,col,gameBoardArr)){
-				highlightRed(row-i,col); 
-				break;
-			}
-			else{
-				break;
-			}
-		}
-		for (var i = 1; i < 8; i++){
-			if(inbounds(row,col+i) && isEmpty(row,col+i,gameBoardArr)){
-				highlightYellow(row,col+i);
-			} else if (inbounds(row,col+i) && !isEmpty(row,col+i,gameBoardArr) && !sameColor(piece,row,col+i,gameBoardArr)){
-				highlightRed(row,col+i); 
-				break;
-			}
-			else{
-				break;
-			}
-		}
-		for (var i = 1; i < 8; i++){
-			if(inbounds(row,col-i) && isEmpty(row,col-i,gameBoardArr)){
-				highlightYellow(row,col-i);
-			} else if (inbounds(row,col-i) && !isEmpty(row,col-i,gameBoardArr) && !sameColor(piece,row,col-i,gameBoardArr)){
-				highlightRed(row,col-i); 
-				break;
-			}
-			else{
-				break;
-			}
-		}
-	}
-
-	function highlightRed(row,col){
-		$('#'+row.toString()+col.toString()).addClass('highlight-red');
-	}
-
-	function highlightYellow(row,col){
-		$('#'+row.toString()+col.toString()).addClass('highlight-yellow');
-	}
-
-	function inbounds(row, col){
-		if (row <= 7 && row >= 0 && col <= 7 && col >= 0){
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	function initializePiece(gameBoardArr, row, col){
-		if(row === 1){
-			gameBoardArr[row][col].piece = makePiece('black','pawn');
-			var piece = gameBoardArr[row][col].piece;
-			putPieceInSquare(piece,row,col,gameBoardArr);
-		} else if(row === 6){
-			gameBoardArr[row][col].piece = makePiece('white','pawn');
-			var piece = gameBoardArr[row][col].piece;
-			putPieceInSquare(piece,row,col,gameBoardArr);
-		} else if(row === 0){
-			gameBoardArr[row][col].piece = makeRoyal(gameBoardArr, 'black', col);
-			var piece = gameBoardArr[row][col].piece;
-			putPieceInSquare(piece,row,col,gameBoardArr);
-		} else if(row === 7){
-			gameBoardArr[row][col].piece = makeRoyal(gameBoardArr, 'white', col);
-			var piece = gameBoardArr[row][col].piece;
-			putPieceInSquare(piece,row,col,gameBoardArr);
-		}
-	}
-
-	function initializePieces(gameBoardArr, height, width){
-		for(var i = 0; i < height; i++){
-			for(var j = 0; j < width; j++){
-				initializePiece(gameBoardArr, i, j);
-			}
-		}
-		return gameBoardArr;
-	}
-
-	function isEmpty(row, col, gameBoardArr){
-		if (gameBoardArr[row][col].piece === null){
-			return true;
-		} else {
-			return false;
-		}
+	function putPieceInSquare(piece,row,col,gameBoardArr){
+		$("#"+row.toString()+col.toString()).append(piece.image);
+		piece.position = row.toString()+col.toString();
+		gameBoardArr[row][col].piece = piece;
 	}
 
 	function makeGameBoard(gameBoardArr, height, width){
@@ -541,11 +183,11 @@ $(document).ready(function(){
 				for(var j = 0; j < width; j++){
 					if(flag){
 						$("#gameBoard").append('<div class="square blackSquare"></div>');
-						row.push({'position': i.toString()+j.toString(), 'piece': null});
+						row.push(undefined);
 						flag = false;
 					} else{
 						$("#gameBoard").append('<div class="square whiteSquare"></div>');
-						row.push({'position': i.toString()+j.toString(), 'piece': null});
+						row.push(undefined);
 						flag = true;
 					}
 
@@ -556,46 +198,266 @@ $(document).ready(function(){
 			return gameBoardArr;
 	}
 
-	function makePiece(color, type, row, col){
-		var piece = {
-			'color': color,
-			'type': type,
-			'image': '<img src="./Assets/'+color+capitalize(type)+'.png">',
-			'targetSquares': [],
-			'movesArr': [],
-			'initialPos': true,
+	function placeImage(img, row, col){
+		$("#"+row.toString()+col.toString()).append(img);
+	}
+
+	function placeRoyal(gameBoardArr, row, col, color){
+		if (col === 0 || col === 7){
+			gameBoardArr[row][col] = new Rook(capitalize(color)+'Rook'+col, color, 'rook', '<img src="./Assets/'+color+'Rook.png">',row.toString()+col.toString());
+			placeImage(gameBoardArr[row][col].image, row, col);
+		} else if (col === 1 || col === 6){
+			gameBoardArr[row][col] = new Knight(capitalize(color)+'Knight'+col, color, 'knight', '<img src="./Assets/'+color+'Knight.png">',row.toString()+col.toString());
+			placeImage(gameBoardArr[row][col].image, row, col);
+		} else if (col === 2 || col === 5){
+			gameBoardArr[row][col] = new Bishop(capitalize(color)+'Bishop'+col, color, 'bishop', '<img src="./Assets/'+color+'Bishop.png">',row.toString()+col.toString());
+			placeImage(gameBoardArr[row][col].image, row, col);
+		} else if (col === 3){
+			gameBoardArr[row][col] = new Queen(capitalize(color)+'Queen'+col, color, 'queen', '<img src="./Assets/'+color+'Queen.png">',row.toString()+col.toString());
+			placeImage(gameBoardArr[row][col].image, row, col);
+		} else if (col === 4){
+			gameBoardArr[row][col] = new King(capitalize(color)+'King'+col, color, 'king', '<img src="./Assets/'+color+'King.png">',row.toString()+col.toString());
+			placeImage(gameBoardArr[row][col].image, row, col);
 		}
-		return piece
 	}
 
-	function makeRoyal(gameBoardArr, color, col){
-		var piece
-		if(col === 0 || col === 7){
-			piece = makePiece(color, 'rook');
-		} else if(col === 1 || col === 6){
-			piece = makePiece(color, 'knight');
-		} else if(col === 2 || col === 5){
-			piece = makePiece(color, 'bishop');
-		}else if(col === 3){
-			piece = makePiece(color, 'queen');
-		}else{
-			piece = makePiece(color, 'king');
+	function placePiece(gameBoardArr, row, col){
+		if(row == 1){
+			gameBoardArr[row][col] = new Pawn('BlackPawn'+col, 'black', 'pawn', '<img src="./Assets/blackPawn.png">',row.toString()+col.toString());
+			placeImage(gameBoardArr[row][col].image, row, col);
+		} else if (row == 6){
+			gameBoardArr[row][col] = new Pawn('WhitePawn'+col, 'white', 'pawn', '<img src="./Assets/whitePawn.png">',row.toString()+col.toString());
+			placeImage(gameBoardArr[row][col].image, row, col);
+		} else if (row === 0){
+			placeRoyal(gameBoardArr, row, col, 'black');
+		} else if (row === 7){
+			placeRoyal(gameBoardArr, row, col, 'white');
+		} else {
+			return;
 		}
-		return piece;
 	}
 
-	function putPieceInSquare(piece,row,col,gameBoardArr){
-		$("#"+row.toString()+col.toString()).append(piece.image);
-		piece.position = row.toString()+col.toString();
-		gameBoardArr[row][col].piece = piece;
+	function placePieces(gameBoardArr){
+		for(var i = 0; i < gameBoardArr.length; i++){
+			for(var j = 0; j < gameBoardArr[i].length; j++){
+				placePiece(gameBoardArr,i,j);
+
+			}
+		}
 	}
 
-	function sameColor(piece, row, col, gameBoardArr){
-		var targetPiece = gameBoardArr[row][col].piece;
-		if(piece.color === targetPiece.color){
+	function inbounds(row, col){
+		if (row <= 7 && row >= 0 && col <= 7 && col >= 0){
 			return true;
 		} else {
 			return false;
+		}
+	}
+
+	function sameColor(gameBoardArr, row, col, color){
+		if(gameBoardArr[row][col].color === color){
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	function straightTargetsWrapper(gameBoardArr, dist){
+		return function(row, col, threatenedByWhiteArr, threatenedByBlackArr){
+			obj = this;
+			for (var i = 1; i < dist; i++){
+				if (inbounds(row, col+i) && !gameBoardArr[row][col+i]){
+					obj.targetsArr.push(row.toString()+(col+i).toString());
+					obj.addToThreatenedArrays(row.toString()+(col+i).toString(), threatenedByWhiteArr, threatenedByBlackArr);
+				} else if(inbounds(row, col+i) && gameBoardArr[row][col+i]){
+					obj.addToThreatenedArrays(row.toString()+(col+i).toString(), threatenedByWhiteArr, threatenedByBlackArr);
+					if(!sameColor(gameBoardArr,row,col+i,obj.color)){
+						obj.targetsArr.push(row.toString()+(col+i).toString());
+					}
+					break;
+				}
+			}
+			for (var i = 1; i < dist; i++){
+				if (inbounds(row, col-i) && !gameBoardArr[row][col-i]){
+					obj.targetsArr.push(row.toString()+(col-i).toString());
+					obj.addToThreatenedArrays(row.toString()+(col-i).toString(), threatenedByWhiteArr, threatenedByBlackArr);
+				} else if(inbounds(row, col-i) && gameBoardArr[row][col-i]){
+					obj.addToThreatenedArrays(row.toString()+(col-i).toString(), threatenedByWhiteArr, threatenedByBlackArr);
+					if(!sameColor(gameBoardArr,row,col-i,obj.color)){
+						obj.targetsArr.push(row.toString()+(col-i).toString());
+					}
+					break;
+				}
+			}
+			for (var i = 1; i < dist; i++){
+				if (inbounds(row+i, col) && !gameBoardArr[row+i][col]){
+					obj.targetsArr.push((row+i).toString()+col.toString());
+					obj.addToThreatenedArrays((row+i).toString()+col.toString(), threatenedByWhiteArr, threatenedByBlackArr);
+				} else if(inbounds(row+i, col) && gameBoardArr[row+i][col]){
+					obj.addToThreatenedArrays((row+i).toString()+col.toString(), threatenedByWhiteArr, threatenedByBlackArr);
+					if(!sameColor(gameBoardArr,row+i,col,obj.color)){
+						obj.targetsArr.push((row+i).toString()+col.toString());
+					}
+					break;
+				}
+			}
+			for (var i = 1; i < dist; i++){
+				if (inbounds(row-i, col) && !gameBoardArr[row-i][col]){
+					obj.targetsArr.push((row-i).toString()+col.toString());
+					obj.addToThreatenedArrays((row-i).toString()+col.toString(), threatenedByWhiteArr, threatenedByBlackArr);
+				} else if(inbounds(row-i, col) && gameBoardArr[row-i][col]){
+					obj.addToThreatenedArrays((row-i).toString()+col.toString(), threatenedByWhiteArr, threatenedByBlackArr);
+					if(!sameColor(gameBoardArr,row-i,col,obj.color)){
+						obj.targetsArr.push((row-i).toString()+col.toString());
+					}
+					break;
+				}
+			}
+		}
+	}
+
+	function diagonalTargetsWrapper(gameBoardArr, dist){
+		return function(row, col, threatenedByWhiteArr, threatenedByBlackArr){
+			obj = this;
+			for(var i = 1; i < dist; i++){
+				if (inbounds(row-i, col-i) && !gameBoardArr[row-i][col-i]){
+					obj.targetsArr.push((row-i).toString()+(col-i).toString());
+					obj.addToThreatenedArrays((row-i).toString()+(col-i).toString(), threatenedByWhiteArr, threatenedByBlackArr);
+				} else if(inbounds(row-i, col-i) && gameBoardArr[row-i][col-i]){
+					obj.addToThreatenedArrays((row-i).toString()+(col-i).toString(), threatenedByWhiteArr, threatenedByBlackArr);
+					if(!sameColor(gameBoardArr,row-i,col-i,obj.color)){
+						obj.targetsArr.push((row-i).toString()+(col-i).toString());
+					}
+					break;
+				}
+			}
+			for(var i = 1; i < dist; i++){
+				if (inbounds(row-i, col+i) && !gameBoardArr[row-i][col+i]){
+					obj.targetsArr.push((row-i).toString()+(col+i).toString());
+					obj.addToThreatenedArrays((row-i).toString()+(col+i).toString(), threatenedByWhiteArr, threatenedByBlackArr);
+				} else if(inbounds(row-i, col+i) && gameBoardArr[row-i][col+i]){
+					obj.addToThreatenedArrays((row-i).toString()+(col+i).toString(), threatenedByWhiteArr, threatenedByBlackArr);
+					if(!sameColor(gameBoardArr,row-i,col+i,obj.color)){
+						obj.targetsArr.push((row-i).toString()+(col+i).toString());
+					}
+					break;
+				}
+			}
+			for(var i = 1; i < dist; i++){
+				if (inbounds(row+i, col-i) && !gameBoardArr[row+i][col-i]){
+					obj.targetsArr.push((row+i).toString()+(col-i).toString());
+					obj.addToThreatenedArrays((row+i).toString()+(col-i).toString(), threatenedByWhiteArr, threatenedByBlackArr);
+				} else if(inbounds(row+i, col-i) && gameBoardArr[row+i][col-i]){
+					obj.addToThreatenedArrays((row+i).toString()+(col-i).toString(), threatenedByWhiteArr, threatenedByBlackArr);
+					if(!sameColor(gameBoardArr,row+i,col-i,obj.color)){
+						obj.targetsArr.push((row+i).toString()+(col-i).toString());
+					}
+					break;
+				}
+			}
+			for(var i = 1; i < dist; i++){
+				if (inbounds(row+i, col+i) && !gameBoardArr[row+i][col+i]){
+					obj.targetsArr.push((row+i).toString()+(col+i).toString());
+					obj.addToThreatenedArrays((row+i).toString()+(col+i).toString(), threatenedByWhiteArr, threatenedByBlackArr);
+				} else if(inbounds(row+i, col+i) && gameBoardArr[row+i][col+i]){
+					obj.addToThreatenedArrays((row+i).toString()+(col+i).toString(), threatenedByWhiteArr, threatenedByBlackArr);
+					if(!sameColor(gameBoardArr,row+i,col+i,obj.color)){
+						obj.targetsArr.push((row+i).toString()+(col+i).toString());
+					}
+					break;
+				}
+			}
+		}
+	}
+
+	function pawnTargetsWrapper(gameBoardArr){
+		return function(row, col, threatenedByWhiteArr, threatenedByBlackArr){
+			obj = this;
+			if(obj.color === 'black'){
+				if(inbounds(row+1,col-1)){
+					obj.addToThreatenedArrays((row+1).toString()+(col-1).toString(), threatenedByWhiteArr, threatenedByBlackArr);	
+				}
+				if( inbounds(row+1, col+1)){
+					obj.addToThreatenedArrays((row+1).toString()+(col+1).toString(), threatenedByWhiteArr, threatenedByBlackArr);	
+				}
+				if(inbounds(row+1,col+1) && gameBoardArr[row+1][col+1] && !sameColor(gameBoardArr,row+1,col+1,obj.color)){
+					obj.targetsArr.push((row+1).toString()+(col+1).toString());
+				}
+				if(inbounds(row+1,col-1) && gameBoardArr[row+1][col-1] && !sameColor(gameBoardArr,row+1,col-1,obj.color)){
+					obj.targetsArr.push((row+1).toString()+(col-1).toString());
+				}
+			} else if(obj.color === 'white'){
+				if(inbounds(row-1,col-1)){
+					obj.addToThreatenedArrays((row-1).toString()+(col-1).toString(), threatenedByWhiteArr, threatenedByBlackArr);	
+				}
+				if( inbounds(row-1, col+1)){
+					obj.addToThreatenedArrays((row-1).toString()+(col+1).toString(), threatenedByWhiteArr, threatenedByBlackArr);	
+				}
+				if(inbounds(row-1,col+1) && gameBoardArr[row-1][col+1] && !sameColor(gameBoardArr,row-1,col+1,obj.color)){
+					obj.targetsArr.push((row-1).toString()+(col+1).toString());
+				}
+				if(inbounds(row-1,col-1) && gameBoardArr[row-1][col-1] && !sameColor(gameBoardArr,row-1,col-1,obj.color)){
+					obj.targetsArr.push((row-1).toString()+(col-1).toString());
+				}
+			}
+			if(obj.color === 'black'){
+				if(inbounds(row+1,col) && !gameBoardArr[row+1][col]){
+					obj.targetsArr.push((row+1).toString()+col.toString());
+				}
+				if (obj.initialPosition){
+					if(!gameBoardArr[row+2][col]){
+						obj.targetsArr.push((row+2).toString()+col.toString());
+					}
+				}
+			} else if(obj.color === 'white'){
+				if(inbounds(row-1,col) && !gameBoardArr[row-1][col]){
+					obj.targetsArr.push((row-1).toString()+col.toString());
+				}
+				if (obj.initialPosition){
+					if(!gameBoardArr[row-2][col]){
+						obj.targetsArr.push((row-2).toString()+col.toString());
+					}
+				}
+			}
+		}
+	}
+
+	function knightTargetsWrapper(gameBoardArr){
+		return function(row, col, threatenedByWhiteArr, threatenedByBlackArr){
+			obj = this;
+			var knightArr = [[-2,-1],[-2,1],[-1,2],[1,2],[2,1],[2,-1],[-1,-2],[1,-2]];
+			for(var i = 0; i < knightArr.length; i++){
+				if(inbounds(row+knightArr[i][0],col+knightArr[i][1])){
+					obj.addToThreatenedArrays((row+knightArr[i][0]).toString()+(col+knightArr[i][1]).toString(), threatenedByWhiteArr, threatenedByBlackArr);
+					if(inbounds(row+knightArr[i][0],col+knightArr[i][1]) && !gameBoardArr[row+knightArr[i][0]][col+knightArr[i][1]]){
+						obj.targetsArr.push((row+knightArr[i][0]).toString()+(col+knightArr[i][1]).toString());
+					} else if(inbounds(row+knightArr[i][0],col+knightArr[i][1]) && gameBoardArr[row+knightArr[i][0]][col+knightArr[i][1]] && !sameColor(gameBoardArr,row+knightArr[i][0],col+knightArr[i][1],obj.color)){
+						obj.targetsArr.push((row+knightArr[i][0]).toString()+(col+knightArr[i][1]).toString());
+					}
+				}
+			}
+		}
+	}
+
+	function queenTargetsWrapper(gameBoardArr, dist){ 
+		return function(row, col, threatenedByWhiteArr, threatenedByBlackArr){
+			var tar1 = straightTargetsWrapper(gameBoardArr, dist);
+			var tar2 = diagonalTargetsWrapper(gameBoardArr, dist);
+			tar1.call(this,row, col, threatenedByWhiteArr, threatenedByBlackArr);
+			tar2.call(this,row, col, threatenedByWhiteArr, threatenedByBlackArr);
+		}
+	}
+
+	function makeBoardTargets(gameBoardArr, threatenedByWhiteArr, threatenedByBlackArr){
+		// threatenedByWhiteArr = [];
+		// threatenedByBlackArr = [];
+		for(var i = 0; i < gameBoardArr.length; i++){
+			for(var j = 0; j < gameBoardArr[i].length; j++){
+				if(gameBoardArr[i][j]){
+					gameBoardArr[i][j].targetsArr = [];
+					gameBoardArr[i][j].getTargets(i, j, threatenedByWhiteArr, threatenedByBlackArr);
+				}
+			}
 		}
 	}
 
@@ -604,7 +466,15 @@ $(document).ready(function(){
 		$('.square').removeClass('highlight-red');
 	}
 
-		
-});
+	function highlightYellow(id){
+		$('#'+id).addClass('highlight-yellow');
+	}
 
-//every time I move a piece, look at all the pieces on the board, run their highlightmoves functions, and append those squares to the threatenedsquares array, have a separte array fro each color. each space should tell me what squares are threatening it
+	function highlightTargets(arr){
+		for (var i = 0; i < arr.length; i++){
+			highlightYellow(arr[i]);
+		}
+	}
+
+
+});

@@ -7,6 +7,8 @@ $(document).ready(function(){
 		threatenedByBlackArr: [],
 		historyArr: [],
 		redoArr: [],
+		whiteKingInCheckFlag: false,
+		blackKingInCheckFlag: false
 	}
 
 	function Piece (id, color, type, image, position){
@@ -75,12 +77,12 @@ $(document).ready(function(){
         return new Prot();
     } 
 
-	Pawn.prototype.getTargets = pawnTargetsWrapper(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr);
-	Rook.prototype.getTargets = straightTargetsWrapper(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr, 8);
-	Knight.prototype.getTargets = knightTargetsWrapper(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr);
-	Bishop.prototype.getTargets = diagonalTargetsWrapper(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr, 8);
-	Queen.prototype.getTargets = queenTargetsWrapper(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr, 8);
-	King.prototype.getTargets = queenTargetsWrapper(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr, 2);
+	Pawn.prototype.getTargets = pawnTargetsWrapper(global.gameBoardArr);
+	Rook.prototype.getTargets = straightTargetsWrapper(global.gameBoardArr, 8);
+	Knight.prototype.getTargets = knightTargetsWrapper(global.gameBoardArr);
+	Bishop.prototype.getTargets = diagonalTargetsWrapper(global.gameBoardArr, 8);
+	Queen.prototype.getTargets = queenTargetsWrapper(global.gameBoardArr, 8);
+	King.prototype.getTargets = queenTargetsWrapper(global.gameBoardArr, 2);
 
 	makeGameBoard(global.gameBoardArr, 8, 8);
 
@@ -108,20 +110,44 @@ $(document).ready(function(){
 			} else {
 				global.whiteMoveFlag = true;
 			}
+			makeBoardTargets(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr);
+			modifyKingMovement(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr);
+			console.log('TbB: ',global.threatenedByBlackArr);
+			global.threatenedByBlackArr = [];
+			console.log('TbB: ',global.threatenedByBlackArr);
 		}
-		makeBoardTargets(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr);
-		// console.log('white ', global.threatenedByWhiteArr);
-		// console.log('black ', global.threatenedByBlackArr);
+		// makeBoardTargets(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr);
+		// modifyKingMovement(global.gameBoardArr, global.threatenedByWhiteArr, global.threatenedByBlackArr);
+		// console.log('TbB: ',global.threatenedByBlackArr);
+		// global.threatenedByBlackArr = [];
+		// console.log('TbB: ',global.threatenedByBlackArr);
+	// console.log(global.threatenedByWhiteArr);
 	});
 
 	console.log(global.gameBoardArr);
-	// highlightTargets(global.threatenedByWhiteArr);
-	// highlightTargets(global.threatenedByBlackArr);
 	console.log(global.threatenedByBlackArr);
 	console.log(global.threatenedByWhiteArr);
 
 
 //=================================FUNCTIONS==============================
+	function modifyKingMovement(gameBoardArr, threatenedByWhiteArr, threatenedByBlackArr){
+		for(var i = 0; i < gameBoardArr.length; i++){
+			for(var j = 0; j < gameBoardArr[i].length; j++){
+				if (gameBoardArr[i][j] && gameBoardArr[i][j].type === 'king'){
+					if(gameBoardArr[i][j].color === 'black'){
+						var diff = $(gameBoardArr[i][j].targetsArr).not(threatenedByWhiteArr).get();
+						gameBoardArr[i][j].targetsArr = diff;
+						console.log('blackKing move: ',gameBoardArr[i][j].targetsArr);
+					} else if (gameBoardArr[i][j].color === 'white'){
+						var diff = $(gameBoardArr[i][j].targetsArr).not(threatenedByBlackArr).get();
+						gameBoardArr[i][j].targetsArr = diff;
+						console.log('whiteKing move: ',gameBoardArr[i][j].targetsArr);
+					}
+				}
+			}
+		}
+	}
+
 	function capitalize(str){
 		str = str.substring(0,1).toUpperCase() + str.substring(1);
 		return str;
@@ -236,8 +262,8 @@ $(document).ready(function(){
 		}
 	}
 
-	function straightTargetsWrapper(gameBoardArr, threatenedByWhiteArr, threatenedByBlackArr, dist){
-		return function(row, col){
+	function straightTargetsWrapper(gameBoardArr, dist){
+		return function(row, col, threatenedByWhiteArr, threatenedByBlackArr){
 			obj = this;
 			for (var i = 1; i < dist; i++){
 				if (inbounds(row, col+i) && !gameBoardArr[row][col+i]){
@@ -290,8 +316,8 @@ $(document).ready(function(){
 		}
 	}
 
-	function diagonalTargetsWrapper(gameBoardArr, threatenedByWhiteArr, threatenedByBlackArr, dist){
-		return function(row, col){
+	function diagonalTargetsWrapper(gameBoardArr, dist){
+		return function(row, col, threatenedByWhiteArr, threatenedByBlackArr){
 			obj = this;
 			for(var i = 1; i < dist; i++){
 				if (inbounds(row-i, col-i) && !gameBoardArr[row-i][col-i]){
@@ -344,8 +370,8 @@ $(document).ready(function(){
 		}
 	}
 
-	function pawnTargetsWrapper(gameBoardArr, threatenedByWhiteArr, threatenedByBlackArr){
-		return function(row, col){
+	function pawnTargetsWrapper(gameBoardArr){
+		return function(row, col, threatenedByWhiteArr, threatenedByBlackArr){
 			obj = this;
 			if(obj.color === 'black'){
 				if(inbounds(row+1,col-1)){
@@ -396,8 +422,8 @@ $(document).ready(function(){
 		}
 	}
 
-	function knightTargetsWrapper(gameBoardArr, threatenedByWhiteArr, threatenedByBlackArr){
-		return function(row, col){
+	function knightTargetsWrapper(gameBoardArr){
+		return function(row, col, threatenedByWhiteArr, threatenedByBlackArr){
 			obj = this;
 			var knightArr = [[-2,-1],[-2,1],[-1,2],[1,2],[2,1],[2,-1],[-1,-2],[1,-2]];
 			for(var i = 0; i < knightArr.length; i++){
@@ -413,23 +439,23 @@ $(document).ready(function(){
 		}
 	}
 
-	function queenTargetsWrapper(gameBoardArr, threatenedByWhiteArr, threatenedByBlackArr, dist){ 
-		return function(row, col){
-			var tar1 = straightTargetsWrapper(gameBoardArr, threatenedByWhiteArr, threatenedByBlackArr, dist);
-			var tar2 = diagonalTargetsWrapper(gameBoardArr, threatenedByWhiteArr, threatenedByBlackArr, dist);
-			tar1.call(this,row, col);
-			tar2.call(this,row, col);
+	function queenTargetsWrapper(gameBoardArr, dist){ 
+		return function(row, col, threatenedByWhiteArr, threatenedByBlackArr){
+			var tar1 = straightTargetsWrapper(gameBoardArr, dist);
+			var tar2 = diagonalTargetsWrapper(gameBoardArr, dist);
+			tar1.call(this,row, col, threatenedByWhiteArr, threatenedByBlackArr);
+			tar2.call(this,row, col, threatenedByWhiteArr, threatenedByBlackArr);
 		}
 	}
 
 	function makeBoardTargets(gameBoardArr, threatenedByWhiteArr, threatenedByBlackArr){
-		threatenedByWhiteArr = [];
-		threatenedByBlackArr = [];
+		// threatenedByWhiteArr = [];
+		// threatenedByBlackArr = [];
 		for(var i = 0; i < gameBoardArr.length; i++){
 			for(var j = 0; j < gameBoardArr[i].length; j++){
 				if(gameBoardArr[i][j]){
 					gameBoardArr[i][j].targetsArr = [];
-					gameBoardArr[i][j].getTargets(i, j);
+					gameBoardArr[i][j].getTargets(i, j, threatenedByWhiteArr, threatenedByBlackArr);
 				}
 			}
 		}

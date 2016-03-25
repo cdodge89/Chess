@@ -1,0 +1,38 @@
+{
+  "name": "chess",
+  "version": "1.0.0",
+  "main": "app.js",
+  "dependencies": {
+    "gulp-concat": "^2.6.0",
+    "gulp": "^3.9.1",
+    "del": "^2.2.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-sass": "^2.2.0",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-uglify": "^1.5.3"
+  },
+  "devDependencies": {
+    "bower": "^1.7.7",
+    "del": "^2.2.0",
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-sass": "^2.2.0",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-uglify": "^1.5.3"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cdodge89/Chess.git"
+  },
+  "author": "Connor Dodge",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cdodge89/Chess/issues"
+  },
+  "homepage": "https://github.com/cdodge89/Chess#readme",
+  "description": ""
+}

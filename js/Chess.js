@@ -233,29 +233,29 @@ $(document).ready(function(){
 
 	function placeRoyal(gameBoardArr, row, col, color){
 		if (col === 0 || col === 7){
-			gameBoardArr[row][col] = new Rook(capitalize(color)+'Rook'+col, color, 'rook', '<img src="./Assets/'+color+'Rook.png">',row.toString()+col.toString());
+			gameBoardArr[row][col] = new Rook(capitalize(color)+'Rook'+col, color, 'rook', '<img src="../Assets/'+color+'Rook.png">',row.toString()+col.toString());
 			placeImage(gameBoardArr[row][col].image, row, col);
 		} else if (col === 1 || col === 6){
-			gameBoardArr[row][col] = new Knight(capitalize(color)+'Knight'+col, color, 'knight', '<img src="./Assets/'+color+'Knight.png">',row.toString()+col.toString());
+			gameBoardArr[row][col] = new Knight(capitalize(color)+'Knight'+col, color, 'knight', '<img src="../Assets/'+color+'Knight.png">',row.toString()+col.toString());
 			placeImage(gameBoardArr[row][col].image, row, col);
 		} else if (col === 2 || col === 5){
-			gameBoardArr[row][col] = new Bishop(capitalize(color)+'Bishop'+col, color, 'bishop', '<img src="./Assets/'+color+'Bishop.png">',row.toString()+col.toString());
+			gameBoardArr[row][col] = new Bishop(capitalize(color)+'Bishop'+col, color, 'bishop', '<img src="../Assets/'+color+'Bishop.png">',row.toString()+col.toString());
 			placeImage(gameBoardArr[row][col].image, row, col);
 		} else if (col === 3){
-			gameBoardArr[row][col] = new Queen(capitalize(color)+'Queen'+col, color, 'queen', '<img src="./Assets/'+color+'Queen.png">',row.toString()+col.toString());
+			gameBoardArr[row][col] = new Queen(capitalize(color)+'Queen'+col, color, 'queen', '<img src="../Assets/'+color+'Queen.png">',row.toString()+col.toString());
 			placeImage(gameBoardArr[row][col].image, row, col);
 		} else if (col === 4){
-			gameBoardArr[row][col] = new King(capitalize(color)+'King'+col, color, 'king', '<img src="./Assets/'+color+'King.png">',row.toString()+col.toString());
+			gameBoardArr[row][col] = new King(capitalize(color)+'King'+col, color, 'king', '<img src="../Assets/'+color+'King.png">',row.toString()+col.toString());
 			placeImage(gameBoardArr[row][col].image, row, col);
 		}
 	}
 
 	function placePiece(gameBoardArr, row, col){
 		if(row == 1){
-			gameBoardArr[row][col] = new Pawn('BlackPawn'+col, 'black', 'pawn', '<img src="./Assets/blackPawn.png">',row.toString()+col.toString());
+			gameBoardArr[row][col] = new Pawn('BlackPawn'+col, 'black', 'pawn', '<img src="../Assets/blackPawn.png">',row.toString()+col.toString());
 			placeImage(gameBoardArr[row][col].image, row, col);
 		} else if (row == 6){
-			gameBoardArr[row][col] = new Pawn('WhitePawn'+col, 'white', 'pawn', '<img src="./Assets/whitePawn.png">',row.toString()+col.toString());
+			gameBoardArr[row][col] = new Pawn('WhitePawn'+col, 'white', 'pawn', '<img src="../Assets/whitePawn.png">',row.toString()+col.toString());
 			placeImage(gameBoardArr[row][col].image, row, col);
 		} else if (row === 0){
 			placeRoyal(gameBoardArr, row, col, 'black');

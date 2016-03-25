@@ -1,0 +1,100 @@
+@import url(../dist/bower_components/bootstrap/dist/css/bootstrap.css);
+h1 {
+  text-align: center;
+  font-weight: bold;
+  font-family: "Cinzel";
+  font-size: 4em;
+  color: #260126; }
+
+p {
+  text-align: center;
+  font-weight: bold;
+  font-family: "Cinzel";
+  font-size: 1em;
+  color: #260126; }
+
+.mute {
+  width: 100%; }
+
+h3 {
+  text-align: center;
+  font-weight: bold;
+  font-family: "Cinzel";
+  font-size: 1.5em;
+  border-radius: 5px;
+  width: 70%;
+  margin: 0px auto;
+  padding-top: 5px;
+  padding-bottom: 5px; }
+
+#mute-button {
+  font-size: 2em;
+  text-align: center;
+  margin: 0px auto; }
+
+li {
+  float: left;
+  list-style-type: none;
+  width: 6.25vw;
+  max-width: 112px;
+  margin: 10px auto; }
+
+.blackSquare {
+  width: 12.5%;
+  height: 12.5%;
+  max-height: 112px;
+  background-image: url(../Assets/swampSquare.png);
+  float: left; }
+
+.whiteSquare {
+  width: 12.5%;
+  height: 12.5%;
+  max-height: 112px;
+  background-image: url(../Assets/grassSquare.png);
+  float: left; }
+
+#gameBoard {
+  width: 70vh;
+  height: 70vh;
+  max-width: 896px;
+  max-height: 896px;
+  min-width: 504px; }
+
+.no-padding {
+  padding-left: 0px;
+  padding-right: 0px; }
+
+#test-btn {
+  text-align: center;
+  font-weight: bold;
+  font-family: "Cinzel";
+  background: #005784;
+  color: #F2EEB3;
+  font-size: 2em;
+  width: 15vw;
+  margin: 10px auto;
+  border-radius: 5px; }
+
+#test-btn:hover {
+  background: #260126;
+  color: #F2EEB3; }
+
+#white-prison {
+  background: #005784;
+  color: #F2EEB3; }
+
+#black-prison {
+  background: #260126;
+  color: #F2EEB3; }
+
+.prison {
+  background: rgba(10, 10, 10, 0.2);
+  width: 70%; }
+
+img {
+  height: 100%; }
+
+.highlight-yellow {
+  box-shadow: inset 0 0 0 1000px rgba(212, 170, 0, 0.7); }
+
+/*# sourceMappingURL=main.css.map */

@@ -1,0 +1,23 @@
+{
+  "name": "chess",
+  "description": "",
+  "main": "app.js",
+  "authors": [
+    "Connor Dodge"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/cdodge89/Chess",
+  "moduleType": [
+    "node"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "^2.2.2"
+  }
+}

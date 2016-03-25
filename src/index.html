@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Chess</title>
+	<!-- <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"> -->
+	<link rel="stylesheet" type="text/css" href="../dist/main.css">
+	<!-- <link href='https://fonts.googleapis.com/css?family=Passion+One' rel='stylesheet' type='text/css'> -->
+	<link href='https://fonts.googleapis.com/css?family=Cinzel:400,700,900' rel='stylesheet' type='text/css'>
+</head>
+<body>
+	<div id="page-wrap">
+		<h1>Knights and Necromancers Chess</h1>
+		<!-- <div id="test-btn">TEST</div> -->
+		<div class = "mute" id="mute-button"><audio src="../Assets/background_music.mp3" autoplay="true" loop="true" id="music" controls></audio></div>
+		
+		<div class="row">
+			<div class="col-md-3 hidden-sm hidden-xs no-padding">
+				<h3 id="white-prison">Captured White Pieces</h3>
+				<div class="prison container no-padding" id="white-prison-container">
+				</div>
+			</div>
+			<div class="col-md-6 col-sm-12 no-padding">
+				<div class="container no-padding" id="gameBoard">
+
+				</div>
+			</div>
+			<div class="col-md-3 hidden-sm hidden-xs no-padding">
+				<h3 id="black-prison">Captured Black Pieces</h3>
+				<div class="prison container no-padding" id="black-prison-container">
+				</div>
+			</div>
+		</div>
+	</div>
+<p>Music and Art created by Connor Dodge</p>
+<script type="text/javascript" src='../dist/app.min.js'></script>
+</body>
+</html>

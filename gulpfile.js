@@ -29,7 +29,8 @@ cleanCss = require('gulp-clean-css');
 });
 
  gulp.task('compileSass', function() {
-  return gulp.src("src/scss/application.scss")
+  return gulp.src("./src/scss/application.scss")
+      .pipe(sass({includePaths: ['./src/scss']}))
       .pipe(maps.init())
       .pipe(sass())
       .pipe(rename('main.css'))
@@ -54,7 +55,7 @@ cleanCss = require('gulp-clean-css');
  });
 
  gulp.task('watchFiles', function() {
-  gulp.watch('scss/**/*.scss', ['compileSass']);
+  gulp.watch('src/scss/*.scss', ['compileSass']);
   gulp.watch('js/Chess.js', ['concatScripts']);
   gulp.watch('src/index.html', ['copyIndex']);
 });
@@ -65,7 +66,7 @@ cleanCss = require('gulp-clean-css');
  });
 
  gulp.task('default', ['serve'], function(){
- 	gulp.watch('scss/**/*.scss', ['serve']);
+ 	gulp.watch('src/scss/*.scss', ['serve']);
 	gulp.watch('js/Chess.js', ['serve']);
 	gulp.watch('src/index.html', ['serve']);
  });
